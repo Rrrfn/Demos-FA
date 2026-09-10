@@ -1,0 +1,21 @@
+# سیستم‌عامل
+.DS_Store
+Thumbs.db
+
+# پایتون
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# محیط
+.env
+.env.local
+
+# دیتابیس
+*.db
+*.sqlite3
+
+# ویرایشگر
+.vscode/
+.idea/

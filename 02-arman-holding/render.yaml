@@ -1,0 +1,7 @@
+# Render Blueprint — هلدینگ آرمان (Static Site)
+services:
+  - type: web
+    name: arman-holding
+    runtime: static
+    buildCommand: ""
+    staticPublishPath: .
