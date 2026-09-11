@@ -1,8 +1,13 @@
-# Render Blueprint — نافه (سایت ایستا)
+# Render Blueprint — نافه (Static Site)
+#
+# rootDir الزامی است: این پروژه داخل یک مخزن چندپروژه‌ای قرار دارد و باید از
+# همین پوشه منتشر شود؛ در غیر این صورت Render از ریشهٔ مخزن منتشر می‌کند و
+# هیچ فایل سایتی پیدا نمی‌شود.
 services:
   - type: web
     name: nafeh-parfum
     runtime: static
+    rootDir: 03-nafeh-parfum
     buildCommand: ""
     staticPublishPath: .
     headers:

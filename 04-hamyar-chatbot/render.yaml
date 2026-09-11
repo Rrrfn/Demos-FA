@@ -1,26 +1,46 @@
 # Render Blueprint — همیار (Web Service)
 #
-# A single worker is intentional: the retrieval index lives in process memory,
-# so one worker keeps admin edits instantly visible to every thread. Threads
-# provide the concurrency instead.
+# rootDir الزامی است: این پروژه داخل یک مخزن چندپروژه‌ای قرار دارد و باید از
+# همین پوشه بیلد و اجرا شود؛ در غیر این صورت Render از ریشهٔ مخزن بیلد
+# می‌کند، requirements.txt را پیدا نمی‌کند و دپلوی شکست می‌خورد.
+#
+# یک worker عامدانه انتخاب شده است: ایندکس بازیابی در حافظهٔ همان پروسه
+# زندگی می‌کند، پس با یک worker ویرایش‌های دانشنامه بی‌درنگ برای همهٔ
+# رشته‌ها دیده می‌شوند و حافظه هدر نمی‌رود. هم‌روندی از راه threadها می‌آید.
 services:
   - type: web
     name: hamyar-chatbot
     runtime: python
     plan: free
+    rootDir: 04-hamyar-chatbot
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 90
     healthCheckPath: /health
     envVars:
+      # نسخهٔ Python باید کامل و منتشرشده باشد (major.minor.patch)
       - key: PYTHON_VERSION
         value: 3.10.20
       - key: HAMYAR_ENV
         value: production
+      # Render مقدار تصادفی می‌سازد؛ از داشبورد بردارید
       - key: HAMYAR_SECRET_KEY
         generateValue: true
-# Free instances have an ephemeral disk, so data/hamyar.db is recreated and
-# reseeded on every deploy. Attach a disk and set HAMYAR_DB_PATH to keep history:
-#    disk:
-#      name: hamyar-data
-#      mountPath: /var/data
-#      sizeGB: 1
+      # کنسول پشتیبانی: با این توکن، endpointهای نوشتن هدر X-Admin-Token
+      # می‌خواهند. مقدار تولیدشده را از داشبورد بردارید و در /admin در کادر
+      # «X-Admin-Token» بگذارید. برای دموی کاملاً باز، این متغیر را حذف کنید.
+      - key: HAMYAR_ADMIN_TOKEN
+        generateValue: true
+
+    # پایداری داده — نیازمند پلن پرداختی
+    # دیسک پلن رایگان موقتی است، پس data/hamyar.db با هر دپلوی از نو ساخته
+    # و seed می‌شود. برای نگه‌داشتن تاریخچه، سرویس را ارتقا دهید، دیسک را در
+    # /var/data سوار کنید و HAMYAR_DB_PATH را برابر مسیر زیر بگذارید:
+    #
+    # disk:
+    #   name: hamyar-data
+    #   mountPath: /var/data
+    #   sizeGB: 1
+    #
+    # و در envVars:
+    #   - key: HAMYAR_DB_PATH
+    #     value: /var/data/hamyar.db
