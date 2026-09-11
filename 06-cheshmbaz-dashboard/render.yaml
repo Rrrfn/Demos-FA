@@ -1,0 +1,62 @@
+# Render Blueprint — چشم‌باز (Web Service)
+#
+# rootDir الزامی است: این پروژه داخل یک مخزن چندپروژه‌ای قرار دارد و باید از
+# همین پوشه بیلد و اجرا شود؛ در غیر این صورت Render از ریشهٔ مخزن بیلد
+# می‌کند، requirements.txt را پیدا نمی‌کند و دپلوی شکست می‌خورد.
+#
+# فرمان start درست است و آزموده شده: `cheshmbaz.webapp:app` با یک
+# getattr تنبل ساخته می‌شود و یک شیء Flask واقعی برمی‌گرداند. فراخوانی
+# مستقیم WSGI روی همین هدف، کد ۲۰۰ برگرداند (تأیید روی همین سیستم).
+# همان مسیر، زمینه را هم راه‌اندازی کامل می‌کند و زمان‌بند را روشن؛ پس روی
+# سرور تولیدی هم جمع‌آوری خودکار قیمت اجرا می‌شود.
+#
+# یک worker عامدانه انتخاب شده است: حلقه‌های زمان‌بند درون همین پروسه‌اند و
+# قرارداد جمع‌آوری در SQLite جلوی نمونه‌برداری موازی را می‌گیرد. چند worker
+# هم درست کار می‌کند، ولی زمان‌بند بی‌دلیل چند بار بالا می‌آید.
+services:
+  - type: web
+    name: cheshmbaz-dashboard
+    runtime: python
+    plan: free
+    region: frankfurt
+    rootDir: 06-cheshmbaz-dashboard
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn cheshmbaz.webapp:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120
+    healthCheckPath: /health
+    envVars:
+      # نسخهٔ Python باید کامل و منتشرشده باشد (major.minor.patch)
+      - key: PYTHON_VERSION
+        value: 3.10.20
+      - key: CHESHMAZ_ENV
+        value: production
+      # بازهٔ جمع‌آوری خودکار و آستانهٔ پیش‌فرض هشدار نوسان
+      - key: COLLECT_INTERVAL_SECONDS
+        value: "1800"
+      - key: ALERT_PCT
+        value: "2.0"
+      # اختیاری — با تنظیم این متغیر، endpointهای تغییر وضعیت
+      # (/api/v1/collect و /api/v1/alerts/evaluate) هدر X-Admin-Token
+      # می‌خواهند. نکتهٔ مهم: دکمهٔ «واکشی تازه» در داشبورد هیچ راهی برای
+      # فرستادن توکن ندارد، پس اگر این متغیر را بگذارید آن دکمه توکن خطا
+      # می‌دهد. برای دموی عمومی آن را تنظیم نکنید.
+      #
+      # - key: CHESHMAZ_ADMIN_TOKEN
+      #   generateValue: true
+
+    # پایداری داده — نیازمند پلن پرداختی
+    # دیسک پلن رایگان قابل اتصال نیست، پس data/cheshmbaz.db با هر دپلوی از نو
+    # ساخته می‌شود و تاریخچه و قواعد هشدار از دست می‌روند (قیمت‌های تازه
+    # بلافاصله بعد از بالا آمدن سرویس دوباره جمع می‌شوند). برای نگه‌داشتن
+    # داده: سرویس را ارتقا دهید، دیسک را در /var/data سوار کنید و متغیرهای
+    # زیر را اضافه کنید.
+    #
+    # disk:
+    #   name: cheshmbaz-data
+    #   mountPath: /var/data
+    #   sizeGB: 1
+    #
+    # و در envVars:
+    #   - key: CHESHMAZ_DATA_DIR
+    #     value: /var/data
+    #   - key: CHESHMAZ_DB_PATH
+    #     value: /var/data/cheshmbaz.db

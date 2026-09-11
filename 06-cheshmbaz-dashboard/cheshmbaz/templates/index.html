@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>چشم‌باز — داشبورد هوشمند بازار</title>
+  <meta name="description" content="پایش زندهٔ قیمت طلا، سکه، ارز و رمزارز با نمودار تاریخی و موتور هشدار — همهٔ اعداد از منابع واقعی و همراه زمان و منبع.">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='fonts/fonts.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="">
+      <span>
+        <span class="name">چشم‌باز</span>
+        <span class="sub">Market Intelligence</span>
+      </span>
+    </div>
+
+    <span class="live" id="live-badge">
+      <span class="dot" id="live-dot"></span>
+      <span id="live-text">در حال اتصال…</span>
+    </span>
+
+    <span class="live" title="آخرین نوشتن موفق در پایگاه داده">
+      <span class="muted">آخرین به‌روزرسانی</span>
+      <b id="last-update">—</b>
+    </span>
+
+    <span class="live" title="ساعت سرور">
+      <b id="server-clock">—</b>
+    </span>
+
+    <div class="top-tools">
+      <label class="search">
+        <span aria-hidden="true">⌕</span>
+        <input id="search-input" type="search" placeholder="جستجوی دارایی… (دلار، سکه، بیت‌کوین)" autocomplete="off">
+      </label>
+      <button class="btn primary" id="btn-collect" type="button">واکشی تازه</button>
+      <button class="btn ghost" id="btn-autorefresh" type="button" aria-pressed="true">به‌روزرسانی خودکار: روشن</button>
+    </div>
+  </div>
+</header>
+
+<div class="ticker">
+  <div class="ticker-in" id="ticker">
+    <div class="skeleton">در حال بارگذاری قیمت‌های شاخص…</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="panel" style="margin-top:16px">
+    <div class="stats" id="market-stats">
+      <div class="stat"><div class="k">دارایی‌ها</div><div class="v">—</div></div>
+      <div class="stat"><div class="k">قیمت‌های موجود</div><div class="v">—</div></div>
+      <div class="stat"><div class="k">داده تازه</div><div class="v">—</div></div>
+      <div class="stat"><div class="k">صعودی</div><div class="v up">—</div></div>
+      <div class="stat"><div class="k">نزولی</div><div class="v down">—</div></div>
+      <div class="stat"><div class="k">نمونه‌های تاریخچه</div><div class="v gold">—</div></div>
+    </div>
+  </div>
+
+  <div class="grid main">
+
+    <!-- ------------------------------------------------------------ ستون اصلی -->
+    <div>
+      <section class="panel" id="chart-panel">
+        <div class="panel-head">
+          <h2>نمودار تاریخی</h2>
+          <span class="hint" id="chart-source">—</span>
+          <div class="spacer"></div>
+          <div class="range-row" id="range-row"></div>
+        </div>
+        <div class="panel-body">
+          <div class="chart-head">
+            <div>
+              <div class="chart-title" id="chart-title">یک دارایی را انتخاب کنید</div>
+              <div class="chart-price" id="chart-price">—</div>
+            </div>
+            <div class="chart-meta" id="chart-meta"></div>
+          </div>
+          <div class="chart-wrap" id="chart-wrap">
+            <div class="chart-empty">
+              <b>داده‌ای برای نمایش نیست</b>
+              روی یکی از ردیف‌های جدول دارایی‌ها بزنید تا نمودار ساخته شود.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>دارایی‌ها</h2>
+          <div class="chips" id="kind-chips"></div>
+          <div class="spacer"></div>
+          <span class="hint" id="assets-hint">—</span>
+        </div>
+        <div class="panel-body flush">
+          <div class="scroll">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>دارایی</th>
+                  <th>قیمت</th>
+                  <th>تغییر ۲۴س</th>
+                  <th class="hide-sm">بازهٔ روز</th>
+                  <th class="hide-sm">منبع</th>
+                  <th>تازگی</th>
+                  <th class="hide-sm">ثبت</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="assets-body">
+                <tr><td colspan="8" class="skeleton">در حال بارگذاری…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>بیشترین تغییرها</h2>
+          <div class="spacer"></div>
+          <div class="chips" id="mover-windows"></div>
+        </div>
+        <div class="panel-body flush">
+          <div class="grid two">
+            <div>
+              <div class="panel-head" style="border-top:0"><h2 style="color:var(--up)">صعودی‌ها</h2></div>
+              <div class="rows" id="movers-up"><div class="empty">—</div></div>
+            </div>
+            <div>
+              <div class="panel-head" style="border-top:0"><h2 style="color:var(--down)">نزولی‌ها</h2></div>
+              <div class="rows" id="movers-down"><div class="empty">—</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ------------------------------------------------------------ ستون کنار -->
+    <aside>
+      <section class="panel">
+        <div class="panel-head">
+          <h2>سلامت منابع داده</h2>
+          <div class="spacer"></div>
+          <span class="hint" id="sources-hint">—</span>
+        </div>
+        <div class="panel-body flush" id="sources-list">
+          <div class="skeleton">در حال بارگذاری…</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>دیده‌بان</h2>
+          <div class="spacer"></div>
+          <span class="hint" id="watchlist-count">—</span>
+        </div>
+        <div class="panel-body flush" id="watchlist-body">
+          <div class="empty">هنوز قلمی نشان نکرده‌اید. ستارهٔ کنار هر دارایی را بزنید.</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>هشدارها</h2>
+          <div class="spacer"></div>
+          <span class="hint" id="alerts-stats">—</span>
+        </div>
+        <div class="panel-body">
+          <form class="form" id="alert-form">
+            <div class="field">
+              <label for="alert-slug">دارایی</label>
+              <select id="alert-slug">
+                {% for kind in registry.kinds %}
+                <optgroup label="{{ kind.label }}">
+                  {% for asset in registry.assets if asset.kind == kind.value %}
+                  <option value="{{ asset.slug }}">{{ asset.title }}</option>
+                  {% endfor %}
+                </optgroup>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="field">
+                <label for="alert-kind">شرط</label>
+                <select id="alert-kind"></select>
+              </div>
+              <div class="field">
+                <label for="alert-threshold">آستانه</label>
+                <input id="alert-threshold" type="number" step="any" min="0" value="2" inputmode="decimal">
+              </div>
+            </div>
+            <div class="switch">
+              <input type="checkbox" id="alert-oneshot">
+              <label for="alert-oneshot">هشدار یک‌باره (پس از وقوع متوقف شود)</label>
+            </div>
+            <div class="form-actions">
+              <button class="btn" type="button" id="btn-preview">پیش‌نمایش</button>
+              <button class="btn primary" type="submit">ساخت هشدار</button>
+              <span class="form-msg" id="alert-msg"></span>
+            </div>
+          </form>
+        </div>
+        <div class="panel-body flush">
+          <div class="rows" id="alerts-body"><div class="empty">هیچ هشداری ساخته نشده است.</div></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>دفتر رخداد</h2>
+          <div class="spacer"></div>
+          <label class="switch"><input type="checkbox" id="events-suppressed" checked> نمایش مهارشده‌ها</label>
+        </div>
+        <div class="panel-body flush">
+          <div class="rows" id="events-body"><div class="empty">رخدادی ثبت نشده است.</div></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>وضعیت سرویس</h2></div>
+        <div class="panel-body flush" id="status-body">
+          <div class="skeleton">در حال بارگذاری…</div>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <p class="foot">
+    همهٔ قیمت‌ها از منابع واقعی خوانده می‌شوند و همراه زمان مشاهده، منبع و وضعیت تازگی نمایش داده می‌شوند.
+    درصد تغییر اقلام داخلی از تاریخچهٔ ثبت‌شدهٔ همین سرویس محاسبه می‌شود؛ اگر مرجعی نباشد، «—» می‌ماند.
+    <br>
+    بازهٔ جمع‌آوری: {{ config.collect_interval }} ثانیه · بازهٔ ارزیابی هشدار: {{ config.alert_interval }} ثانیه ·
+    رابط API: <code>/api/v1/overview</code>
+  </p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  window.__CBZ__ = {
+    config: {{ config|tojson }},
+    registry: {{ registry|tojson }}
+  };
+</script>
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>
