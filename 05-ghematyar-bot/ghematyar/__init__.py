@@ -4,7 +4,7 @@
 اجرا:
 
 * توسعه (polling): ``python -m ghematyar``
-* تولید (webhook):  ``python -m ghematyar webhook``  یا  ``gunicorn webapp:app``
+* تولید (webhook):  ``python -m ghematyar webhook``
 * آزمون منابع:      ``python -m ghematyar check``
 
 نکتهٔ معماری: import کردن این پکیج هیچ عارضهٔ جانبی ندارد — نه پایگاه

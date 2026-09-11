@@ -2,6 +2,5 @@ aiogram>=3.13,<4
 beautifulsoup4>=4.12
 lxml>=5.0
 aiohttp>=3.9
-gunicorn>=21.0
 # رسم نمودار /chart (در کد به‌صورت تنبل import می‌شود)
 matplotlib>=3.7

@@ -1,3 +1,13 @@
+# Render Blueprint — قیمت‌یار (Web Service)
+#
+# rootDir الزامی است: این پروژه داخل یک مخزن چندپروژه‌ای قرار دارد و باید از
+# همین پوشه بیلد و اجرا شود؛ در غیر این صورت Render از ریشهٔ مخزن بیلد
+# می‌کند، requirements.txt را پیدا نمی‌کند و دپلوی شکست می‌خورد.
+#
+# فرمان start خودِ وب‌سرور aiohttp را بالا می‌آورد و gunicorn استفاده نمی‌شود:
+# اپلیکیشن aiohttp یک شیء WSGI یا ASGI نیست و gunicorn نمی‌تواند آن را سرو
+# کند (با اولین درخواست خطا می‌دهد). حالت webhook به دامنهٔ عمومی نیاز دارد
+# و Render آن را به‌صورت خودکار در RENDER_EXTERNAL_URL می‌گذارد.
 services:
   - type: web
     name: ghematyar-bot
@@ -6,12 +16,31 @@ services:
     region: frankfurt
     rootDir: 05-ghematyar-bot
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn webapp:app --workers 1 --threads 4 --bind 0.0.0.0:$PORT
+    startCommand: python -m ghematyar webhook
     healthCheckPath: /health
     envVars:
+      # نسخهٔ Python باید کامل و منتشرشده باشد (major.minor.patch)
+      - key: PYTHON_VERSION
+        value: 3.10.20
+      # توکن ربات از @BotFather — مقدار را در داشبورد Render وارد کنید
       - key: TELEGRAM_TOKEN
-        sync: false          # مقدار را در داشبورد Render وارد کنید
+        sync: false
+      # هدر محرمانهٔ webhook. Render مقدار تصادفی می‌سازد و برنامه همان را
+      # هنگام set_webhook به تلگرام می‌دهد، پس نیازی به هم‌خوانی دستی نیست.
       - key: TELEGRAM_WEBHOOK_SECRET
         generateValue: true
-      - key: PYTHON_VERSION
-        value: "3.10.11"
+
+    # پایداری داده — نیازمند پلن پرداختی
+    # دیسک پلن رایگان موقتی است، پس با هر دپلوی پوشهٔ data/ از نو ساخته
+    # می‌شود و هشدارها، دیده‌بان، تاریخچهٔ قیمت و گزارش رویدادها از دست
+    # می‌روند. برای نگه‌داشتن آن‌ها سرویس را ارتقا دهید، دیسک را در
+    # /var/data سوار کنید و GHEMATYAR_DATA_DIR را به آن اشاره دهید:
+    #
+    # disk:
+    #   name: ghematyar-data
+    #   mountPath: /var/data
+    #   sizeGB: 1
+    #
+    # و در envVars:
+    #   - key: GHEMATYAR_DATA_DIR
+    #     value: /var/data

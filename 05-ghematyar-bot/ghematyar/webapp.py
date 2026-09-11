@@ -86,7 +86,11 @@ def create_web_app(config: Config, services: Services | None = None) -> web.Appl
 
 
 def run_webhook(config: Config, services: Services | None = None) -> None:
-    """اجرای وب‌سرور webhook (برای توسعهٔ محلی؛ در تولید gunicorn)."""
+    """اجرای وب‌سرور webhook با فرمان ``python -m ghematyar webhook``.
+
+    از وب‌سرور خود aiohttp استفاده می‌شود؛ اپلیکیشن این زیر gunicorn اجرا
+    نمی‌شود چون شیء WSGI نیست.
+    """
     app = create_web_app(config, services)
     web.run_app(app, host="0.0.0.0", port=config.telegram.port)
 
