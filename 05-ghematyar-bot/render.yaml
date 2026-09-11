@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: ghematyar-bot
+    runtime: python
+    plan: free
+    region: frankfurt
+    rootDir: 05-ghematyar-bot
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn webapp:app --workers 1 --threads 4 --bind 0.0.0.0:$PORT
+    healthCheckPath: /health
+    envVars:
+      - key: TELEGRAM_TOKEN
+        sync: false          # مقدار را در داشبورد Render وارد کنید
+      - key: TELEGRAM_WEBHOOK_SECRET
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: "3.10.11"
