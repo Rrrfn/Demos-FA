@@ -1,0 +1,144 @@
+/* ==========================================================================
+   همیار — support console (admin)
+   Loaded after app.css and reusing its tokens.
+   ========================================================================== */
+
+.console {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  gap: 1.25rem;
+  padding-block: 1.25rem 2.5rem;
+  align-items: start;
+}
+
+/* ------------------------------------------------------------------- nav */
+.console__nav {
+  position: sticky; top: 84px;
+  display: grid; gap: 1rem;
+}
+.console__nav .menu { display: grid; gap: .2rem; padding: .6rem; }
+.console__nav .menu button {
+  display: flex; align-items: center; gap: .6rem;
+  padding: .55rem .7rem; border-radius: var(--radius-sm);
+  font-size: .88rem; font-weight: 600; color: var(--ink-500); text-align: start;
+  transition: background .16s, color .16s;
+}
+.console__nav .menu button:hover { background: var(--surface-3); color: var(--ink-900); }
+.console__nav .menu button[aria-selected="true"] { background: var(--brand-100); color: var(--brand-700); }
+.console__nav .menu .count {
+  margin-inline-start: auto; font-size: .72rem; background: var(--surface-3);
+  border-radius: var(--radius-pill); padding: 0 .45rem;
+}
+
+/* ------------------------------------------------------------------ head */
+.section__head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;
+}
+.section__title { font-size: 1.3rem; font-weight: 800; letter-spacing: -.02em; }
+.section__lead { color: var(--ink-500); font-size: .88rem; }
+
+/* ------------------------------------------------------------------- kpi */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .9rem; }
+.kpi { padding: 1rem var(--pad); }
+.kpi__label { font-size: .78rem; color: var(--ink-400); display: flex; align-items: center; gap: .35rem; }
+.kpi__value { font-size: 1.55rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.6; }
+.kpi__foot { font-size: .75rem; color: var(--ink-400); }
+
+/* ----------------------------------------------------------------- chart */
+.chart { display: grid; gap: .6rem; }
+.chart__bars {
+  display: flex; align-items: flex-end; gap: 4px; height: 148px;
+  padding-top: .4rem; border-bottom: 1px solid var(--line);
+}
+.chart__col { flex: 1; display: grid; align-content: end; gap: 2px; height: 100%; }
+.chart__col span {
+  display: block; border-radius: 4px 4px 0 0; min-height: 3px;
+  background: var(--brand-500); opacity: .9; transition: height .4s var(--ease);
+}
+.chart__col span.is-unanswered { background: var(--line-2); }
+.chart__col:hover span { opacity: 1; }
+.chart__axis { display: flex; gap: 4px; font-size: .64rem; color: var(--ink-400); }
+.chart__axis span { flex: 1; text-align: center; overflow: hidden; }
+
+.bars { display: grid; gap: .55rem; }
+.bars__row { display: grid; gap: .25rem; }
+.bars__top { display: flex; justify-content: space-between; font-size: .82rem; }
+.bars__track { height: 8px; border-radius: var(--radius-pill); background: var(--surface-3); overflow: hidden; }
+.bars__fill { height: 100%; border-radius: inherit; background: var(--brand-500); }
+.bars__fill.is-ai { background: var(--ai-600); }
+.bars__fill.is-warn { background: var(--warn-600); }
+
+/* ---------------------------------------------------------------- tables */
+.table-wrap { overflow-x: auto; }
+table.data { width: 100%; border-collapse: collapse; font-size: .85rem; }
+table.data th, table.data td { padding: .7rem .8rem; text-align: start; vertical-align: top; }
+table.data thead th {
+  font-size: .74rem; font-weight: 700; color: var(--ink-400);
+  text-transform: uppercase; letter-spacing: .03em;
+  border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+table.data tbody tr { border-bottom: 1px solid var(--line); }
+table.data tbody tr:hover { background: var(--surface-2); }
+table.data td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.data td.actions { white-space: nowrap; }
+table.data .clip { max-width: 340px; }
+table.data .clip > span {
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.empty-row { text-align: center; color: var(--ink-400); padding: 2rem 0; }
+
+/* ---------------------------------------------------------------- toolbar */
+.toolbar {
+  display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+  padding: .8rem var(--pad); border-bottom: 1px solid var(--line);
+}
+.toolbar .field { min-width: 200px; }
+.toolbar .spacer { flex: 1; }
+
+/* ----------------------------------------------------------------- modal */
+.modal {
+  position: fixed; inset: 0; z-index: 90;
+  display: grid; place-items: center; padding: 1rem;
+  background: rgba(18, 20, 26, .5); backdrop-filter: blur(3px);
+  animation: fade .2s var(--ease);
+}
+.modal__panel {
+  width: min(640px, 100%); max-height: 90vh; overflow-y: auto;
+  background: var(--surface); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+.modal__head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem var(--pad); border-bottom: 1px solid var(--line);
+}
+.modal__body { padding: var(--pad); display: grid; gap: .9rem; }
+.modal__foot {
+  display: flex; align-items: center; justify-content: flex-end; gap: .6rem;
+  padding: .9rem var(--pad); border-top: 1px solid var(--line);
+}
+@keyframes fade { from { opacity: 0; } }
+
+/* ------------------------------------------------------------------- misc */
+.token-banner {
+  display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+  padding: .6rem .9rem; border-radius: var(--radius-sm);
+  background: var(--warn-100); color: var(--warn-600); font-size: .82rem;
+}
+.token-banner input {
+  flex: 1; min-width: 160px; padding: .35rem .6rem; border-radius: var(--radius-xs);
+  border: 1px solid var(--warn-600); background: var(--surface);
+}
+.doc { padding: var(--pad); display: grid; gap: .5rem; }
+.doc code {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: .78rem; background: var(--surface-3); padding: .1rem .35rem;
+  border-radius: 6px; direction: ltr; display: inline-block;
+}
+
+@media (max-width: 1024px) {
+  .console { grid-template-columns: minmax(0, 1fr); }
+  .console__nav { position: static; }
+  .console__nav .menu { grid-auto-flow: column; grid-auto-columns: max-content; overflow-x: auto; }
+}

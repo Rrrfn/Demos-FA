@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}ویجت سایت — {{ brand_name }}{% endblock %}
+
+{% block head %}
+<style>
+  .store__hero {
+    display: grid; gap: 1rem; padding: clamp(1.5rem, 4vw, 3rem);
+    background: linear-gradient(140deg, var(--brand-700), var(--brand-500));
+    color: #fff; border-radius: var(--radius-lg); margin-block: 1.25rem;
+  }
+  .store__hero h1 { font-size: clamp(1.4rem, 3.4vw, 2.1rem); }
+  .store__hero p { max-width: 60ch; opacity: .92; }
+  .store__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1rem; }
+  .product { padding: 1rem; display: grid; gap: .5rem; }
+  .product__thumb {
+    height: 130px; border-radius: var(--radius); display: grid; place-items: center;
+    background: repeating-linear-gradient(135deg, var(--surface-3) 0 12px, var(--surface-2) 12px 24px);
+    color: var(--ink-300); font-size: .8rem;
+  }
+  .snippet {
+    position: relative; background: var(--ink-900); color: #e6e8f0;
+    border-radius: var(--radius); padding: 1rem 1.1rem; overflow-x: auto;
+    font-family: ui-monospace, Menlo, monospace; font-size: .8rem; direction: ltr; text-align: left;
+  }
+  .snippet button {
+    position: absolute; inset-block-start: .6rem; inset-inline-end: .6rem;
+    background: rgba(255, 255, 255, .12); color: #fff; border-radius: var(--radius-xs);
+    padding: .25rem .6rem; font-size: .72rem;
+  }
+  .steps { display: grid; gap: .6rem; }
+  .step { display: flex; gap: .6rem; align-items: flex-start; font-size: .88rem; }
+  .step b { white-space: nowrap; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="store__hero">
+  <span class="badge" style="background:rgba(255,255,255,.18);color:#fff">ویجت آمادهٔ جاسازی</span>
+  <h1>پشتیبانی هوشمند، بدون تغییر معماری سایت شما</h1>
+  <p>
+    کافی است یک تگ <code>&lt;script&gt;</code> به صفحات سایت اضافه کنید. ویجت سبک، بدون
+    وابستگی و مستقل از فریم‌ورک است؛ گفتگو را در مرورگر بازدیدکننده نگه می‌دارد و همان
+    موتور دانشنامهٔ پنل را صدا می‌زند.
+  </p>
+</section>
+
+<div class="shell" style="grid-template-columns: minmax(0,1.4fr) minmax(0,1fr)">
+  <section class="card">
+    <div class="card__head">
+      <h2 class="card__title">پیش‌نمایش روی یک فروشگاه نمونه</h2>
+      <span class="tiny muted">از دکمهٔ گوشهٔ صفحه استفاده کنید</span>
+    </div>
+    <div class="card__body stack">
+      <div class="store__grid">
+        {% for i in range(4) %}
+          <article class="card product">
+            <div class="product__thumb">تصویر محصول</div>
+            <b class="small">محصول نمونه {{ (i + 1) | fa_digits }}</b>
+            <span class="tiny muted">دستهٔ نمونه · موجود</span>
+            <span class="badge badge--brand">۱٫۲۵۰٫۰۰۰ تومان</span>
+          </article>
+        {% endfor %}
+      </div>
+      <p class="small muted">
+        ویجت با هر چیدمانی کار می‌کند؛ استایل‌ها با پیشوند اختصاصی تزریق می‌شوند تا با
+        CSS سایت میزبان تعارض نداشته باشند.
+      </p>
+    </div>
+  </section>
+
+  <section class="stack">
+    <section class="card">
+      <div class="card__head"><h2 class="card__title">کد جاسازی</h2></div>
+      <div class="card__body stack-sm">
+        <div class="snippet" id="snippet">&lt;script src="{{ widget_host }}/widget.js" defer&gt;&lt;/script&gt;<button id="copySnippet" type="button">کپی</button></div>
+        <p class="tiny muted">همین حالا در همین صفحه فعال است — دکمهٔ «پشتیبانی آنلاین» را در گوشهٔ صفحه ببینید.</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card__head"><h2 class="card__title">راه‌اندازی در سه گام</h2></div>
+      <div class="card__body steps">
+        <p class="step"><b>۱.</b><span>آدرس ویجت را در سایت خود قرار دهید (یک خط).</span></p>
+        <p class="step"><b>۲.</b><span>پرسش‌های پرتکرار را در کنسول پشتیبانی وارد کنید.</span></p>
+        <p class="step"><b>۳.</b><span>گفتگوها و شکاف‌های دانشنامه را در داشبورد رصد کنید.</span></p>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card__head"><h2 class="card__title">API کنترل از بیرون</h2></div>
+      <div class="card__body stack-sm">
+        <p class="small muted">می‌توانید از جاوااسکریپت سایت خودتان هم گفتگو را باز و مدیریت کنید:</p>
+        <div class="snippet">Hamyar.open();<br>Hamyar.ask("هزینه ارسال چقدر است؟");<br>Hamyar.close();</div>
+      </div>
+    </section>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/widget.js') }}" defer></script>
+<script>
+  document.getElementById("copySnippet").addEventListener("click", function () {
+    navigator.clipboard.writeText(document.getElementById("snippet").textContent.replace("کپی", "")).then(function () {
+      var button = document.getElementById("copySnippet");
+      button.textContent = "کپی شد";
+      setTimeout(function () { button.textContent = "کپی"; }, 1800);
+    });
+  });
+</script>
+{% endblock %}

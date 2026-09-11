@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# Environment
+.env
+
+# Runtime database (recreated and seeded on first start)
+data/*.db
+data/*.db-*
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

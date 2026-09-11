@@ -1,0 +1,396 @@
+{% extends "base.html" %}
+
+{% block title %}کنسول پشتیبانی — {{ brand_name }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">{% endblock %}
+
+{% block content %}
+<div class="console" id="consoleRoot"
+     data-overview='{{ overview | tojson }}'
+     data-protected="{{ 'true' if admin_protected else 'false' }}">
+
+  <!-- --------------------------------------------------------------- nav -->
+  <aside class="console__nav">
+    <section class="card">
+      <div class="menu" role="tablist" aria-label="بخش‌های کنسول">
+        <button role="tab" aria-selected="true" data-tab="dashboard">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 19V9M10 19V5M16 19v-6M22 19H2"/></svg>
+          داشبورد
+        </button>
+        <button role="tab" aria-selected="false" data-tab="kb">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 5h11a3 3 0 0 1 3 3v11H7a3 3 0 0 1-3-3V5z"/><path d="M8 9h6M8 13h6"/></svg>
+          دانشنامه
+          <span class="count" id="navKbCount">{{ faq_total | fa_digits }}</span>
+        </button>
+        <button role="tab" aria-selected="false" data-tab="logs">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+          گفت‌وگوها
+          <span class="count" id="navLogCount">{{ log_total | fa_digits }}</span>
+        </button>
+        <button role="tab" aria-selected="false" data-tab="handoffs">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 11a4 4 0 1 0-8 0"/><path d="M4 20a8 8 0 0 1 16 0"/></svg>
+          ارجاع به کارشناس
+          <span class="count" id="navHandoffCount">{{ overview.handoffs | fa_digits }}</span>
+        </button>
+        <button role="tab" aria-selected="false" data-tab="api">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M9 7l-5 5 5 5M15 7l5 5-5 5"/></svg>
+          مرجع API
+        </button>
+      </div>
+    </section>
+
+    <section class="card side__block">
+      <h2 class="side__title">وضعیت موتور</h2>
+      <div class="metric">
+        <span class="metric__label">واحدهای ایندکس‌شده</span>
+        <span class="metric__value">{{ engine_stats.entries | fa_digits }}</span>
+      </div>
+      <div class="metric">
+        <span class="metric__label">آستانهٔ اطمینان</span>
+        <span class="metric__value small">بالا ≥ {{ engine_stats.high_confidence }} · متوسط ≥ {{ engine_stats.medium_confidence }}</span>
+      </div>
+      <p class="tiny muted" style="margin-top:.6rem">
+        پس از هر تغییر در دانشنامه، ایندکس بی‌درنگ بازسازی می‌شود.
+      </p>
+    </section>
+
+    {% if admin_protected %}
+    <section class="card side__block">
+      <h2 class="side__title">دسترسی نوشتن</h2>
+      <p class="tiny muted">این نسخه با توکن مدیریت محافظت می‌شود.</p>
+      <div class="field" style="margin-top:.5rem">
+        <input type="password" id="tokenInput" placeholder="X-Admin-Token" class="ltr">
+      </div>
+      <button class="btn btn--ghost btn--sm btn--block" id="saveToken" type="button" style="margin-top:.5rem">ذخیره توکن</button>
+    </section>
+    {% endif %}
+  </aside>
+
+  <!-- ---------------------------------------------------------- content -->
+  <div class="console__body">
+    <!-- ============================================ dashboard -->
+    <section data-panel="dashboard">
+      <header class="section__head">
+        <div>
+          <h1 class="section__title">داشبورد پشتیبانی</h1>
+          <p class="section__lead">نمای کلی عملکرد دستیار هوشمند در ۱۴ روز گذشته.</p>
+        </div>
+        <span class="badge badge--ai badge--dot">ایندکس فعال</span>
+      </header>
+
+      <div class="kpis">
+        <article class="card kpi">
+          <p class="kpi__label">کل گفت‌وگوها</p>
+          <p class="kpi__value">{{ overview.turns | fa_digits }}</p>
+          <p class="kpi__foot">شامل پاسخ‌یافته و بی‌پاسخ</p>
+        </article>
+        <article class="card kpi">
+          <p class="kpi__label">نرخ پاسخ دانشنامه</p>
+          <p class="kpi__value">{{ overview.match_rate | fa_digits }}٪</p>
+          <p class="kpi__foot">{{ overview.answered | fa_digits }} پاسخ · {{ overview.unanswered | fa_digits }} بدون پاسخ</p>
+        </article>
+        <article class="card kpi">
+          <p class="kpi__label">میانگین درصد تطبیق</p>
+          <p class="kpi__value">{{ (overview.avg_score * 100) | round(1) | fa_digits }}٪</p>
+          <p class="kpi__foot">میانگین شباهت بهترین گزینه</p>
+        </article>
+        <article class="card kpi">
+          <p class="kpi__label">میانگین زمان پاسخ</p>
+          <p class="kpi__value">{{ overview.avg_latency_ms | fa_digits }}<span class="small"> ms</span></p>
+          <p class="kpi__foot">موتور بازیابی درون‌حافظه‌ای</p>
+        </article>
+        <article class="card kpi">
+          <p class="kpi__label">بازخورد کاربران</p>
+          <p class="kpi__value">{{ overview.helpful | fa_digits }} / {{ overview.unhelpful | fa_digits }}</p>
+          <p class="kpi__foot">مفید / مفید نبود</p>
+        </article>
+        <article class="card kpi">
+          <p class="kpi__label">ارجاع به کارشناس</p>
+          <p class="kpi__value">{{ overview.handoffs | fa_digits }}</p>
+          <p class="kpi__foot">درخواست‌های انسانی ثبت‌شده</p>
+        </article>
+      </div>
+
+      <div class="shell" style="grid-template-columns: minmax(0,1.6fr) minmax(0,1fr); padding-block:1.25rem 0">
+        <section class="card">
+          <div class="card__head">
+            <h2 class="card__title">حجم گفت‌وگوهای روزانه</h2>
+            <span class="tiny muted">۱۴ روز اخیر</span>
+          </div>
+          <div class="card__body chart" id="dailyChart"
+               data-series='{{ overview.daily | tojson }}'></div>
+        </section>
+
+        <section class="card">
+          <div class="card__head"><h2 class="card__title">توزیع اطمینان</h2></div>
+          <div class="card__body bars">
+            {% set total = (overview.confidence.high + overview.confidence.medium + overview.confidence.low) or 1 %}
+            {% for key, label, cls in [('high','اطمینان بالا','is-ai'), ('medium','اطمینان متوسط','is-warn'), ('low','اطمینان پایین','')] %}
+              {% set value = overview.confidence[key] %}
+              <div class="bars__row">
+                <div class="bars__top"><span>{{ label }}</span><span class="muted">{{ value | fa_digits }}</span></div>
+                <div class="bars__track"><div class="bars__fill {{ cls }}" style="width: {{ (value / total * 100) | round(1) }}%"></div></div>
+              </div>
+            {% endfor %}
+          </div>
+        </section>
+      </div>
+
+      <div class="shell" style="grid-template-columns: minmax(0,1fr) minmax(0,1fr); padding-block:1.25rem 0">
+        <section class="card">
+          <div class="card__head"><h2 class="card__title">پرتکرارترین دسته‌ها</h2></div>
+          <div class="card__body bars">
+            {% set cat_total = (overview.categories | sum(attribute='count')) or 1 %}
+            {% for item in overview.categories %}
+              <div class="bars__row">
+                <div class="bars__top"><span>{{ item.category }}</span><span class="muted">{{ item.count | fa_digits }}</span></div>
+                <div class="bars__track"><div class="bars__fill" style="width: {{ (item.count / cat_total * 100) | round(1) }}%"></div></div>
+              </div>
+            {% else %}
+              <p class="tiny muted">هنوز گفت‌وگویی دسته‌بندی نشده است.</p>
+            {% endfor %}
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card__head">
+            <h2 class="card__title">پرسش‌های بی‌پاسخ</h2>
+            <span class="tiny muted">فرصت بهبود دانشنامه</span>
+          </div>
+          <div class="table-wrap">
+            <table class="data">
+              <thead><tr><th>پرسش کاربر</th><th>تکرار</th><th>میانگین تطبیق</th></tr></thead>
+              <tbody>
+                {% for row in overview.top_unanswered %}
+                  <tr>
+                    <td class="clip"><span>{{ row.message }}</span></td>
+                    <td class="num">{{ row.count | fa_digits }}</td>
+                    <td class="num">{{ (row.avg_score * 100) | round(0) | fa_digits }}٪</td>
+                  </tr>
+                {% else %}
+                  <tr><td colspan="3" class="empty-row">همهٔ پرسش‌ها پاسخ گرفته‌اند 🎉</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ============================================ knowledge base -->
+    <section data-panel="kb" hidden>
+      <header class="section__head">
+        <div>
+          <h1 class="section__title">مدیریت دانشنامه</h1>
+          <p class="section__lead">افزودن، ویرایش و حذف پرسش‌ها؛ همراه با عبارت‌های جایگزین برای درک بهتر پرسش کاربران.</p>
+        </div>
+        <button class="btn btn--primary" id="addFaq" type="button">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          پرسش جدید
+        </button>
+      </header>
+
+      <section class="card">
+        <div class="toolbar">
+          <div class="field">
+            <input type="search" id="kbSearch" placeholder="جست‌وجو در پرسش، پاسخ یا عبارت جایگزین…">
+          </div>
+          <div class="field">
+            <select id="kbCategory">
+              <option value="">همهٔ دسته‌ها</option>
+              {% for item in categories %}<option value="{{ item.category }}">{{ item.category }} ({{ item.count | fa_digits }})</option>{% endfor %}
+            </select>
+          </div>
+          <span class="spacer"></span>
+          <span class="tiny muted" id="kbMeta">{{ faq_total | fa_digits }} پرسش</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data">
+            <thead>
+              <tr><th style="width:64px">شناسه</th><th>پرسش</th><th style="width:160px">دسته</th><th style="width:90px">عبارت‌ها</th><th style="width:130px">عملیات</th></tr>
+            </thead>
+            <tbody id="kbRows">
+              {% for faq in faqs %}
+                <tr data-id="{{ faq.id }}"
+                    data-question="{{ faq.question }}"
+                    data-answer="{{ faq.answer }}"
+                    data-category="{{ faq.category }}"
+                    data-variants="{{ faq.variants | join('\n') }}">
+                  <td class="num">{{ faq.id | fa_digits }}</td>
+                  <td class="clip"><span>{{ faq.question }}</span></td>
+                  <td><span class="badge">{{ faq.category }}</span></td>
+                  <td class="num">{{ faq.variants | length | fa_digits }}</td>
+                  <td class="actions">
+                    <button class="btn btn--ghost btn--sm" data-edit type="button">ویرایش</button>
+                    <button class="btn btn--danger btn--sm" data-delete type="button">حذف</button>
+                  </td>
+                </tr>
+              {% else %}
+                <tr><td colspan="5" class="empty-row">دانشنامه خالی است. یک پرسش بسازید.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <!-- ============================================ conversation log -->
+    <section data-panel="logs" hidden>
+      <header class="section__head">
+        <div>
+          <h1 class="section__title">نشست‌های گفت‌وگو</h1>
+          <p class="section__lead">همهٔ پیام‌های رسیده، پرسش مرجع، درصد تطبیق و بازخورد کاربر.</p>
+        </div>
+        <div class="toggle" id="logFilter" role="group" aria-label="فیلتر وضعیت">
+          <button type="button" data-status="" aria-pressed="true">همه</button>
+          <button type="button" data-status="answered" aria-pressed="false">پاسخ‌یافته</button>
+          <button type="button" data-status="unanswered" aria-pressed="false">بی‌پاسخ</button>
+        </div>
+      </header>
+
+      <section class="card">
+        <div class="toolbar">
+          <div class="field">
+            <input type="search" id="logSearch" placeholder="جست‌وجو در متن پیام یا پرسش مرجع…">
+          </div>
+          <span class="spacer"></span>
+          <span class="tiny muted" id="logMeta">{{ log_total | fa_digits }} پیام</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data">
+            <thead>
+              <tr><th style="width:150px">زمان</th><th>پیام کاربر</th><th style="width:230px">پرسش مرجع</th><th style="width:90px">تطبیق</th><th style="width:110px">اطمینان</th><th style="width:90px">بازخورد</th></tr>
+            </thead>
+            <tbody id="logRows">
+              {% for turn in logs %}
+                <tr>
+                  <td class="num muted">{{ turn.created_at }}</td>
+                  <td class="clip"><span>{{ turn.message }}</span></td>
+                  <td class="clip small muted"><span>{{ turn.matched_question or '—' }}</span></td>
+                  <td class="num">{{ (turn.score * 100) | round(0) | fa_digits }}٪</td>
+                  <td>
+                    {% if turn.confidence == 'high' %}<span class="badge badge--ok">بالا</span>
+                    {% elif turn.confidence == 'medium' %}<span class="badge badge--warn">متوسط</span>
+                    {% else %}<span class="badge badge--danger">پایین</span>{% endif %}
+                  </td>
+                  <td>
+                    {% if turn.feedback == 'up' %}<span class="badge badge--ok">مفید</span>
+                    {% elif turn.feedback == 'down' %}<span class="badge badge--danger">مفید نبود</span>
+                    {% else %}<span class="muted tiny">—</span>{% endif %}
+                  </td>
+                </tr>
+              {% else %}
+                <tr><td colspan="6" class="empty-row">هنوز پیامی ثبت نشده است.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <!-- ============================================ handoffs -->
+    <section data-panel="handoffs" hidden>
+      <header class="section__head">
+        <div>
+          <h1 class="section__title">ارجاع به کارشناس انسانی</h1>
+          <p class="section__lead">درخواست‌هایی که دستیار به تیم انسانی سپرده است.</p>
+        </div>
+      </header>
+      <section class="card">
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th style="width:130px">تیکت</th><th style="width:170px">زمان</th><th style="width:170px">نشست</th><th>دلیل / آخرین پرسش</th></tr></thead>
+            <tbody>
+              {% for item in handoffs %}
+                <tr>
+                  <td class="num"><b>HM-{{ '%05d' % item.id }}</b></td>
+                  <td class="num muted">{{ item.created_at }}</td>
+                  <td class="num ltr">{{ item.session_id }}</td>
+                  <td class="clip"><span>{{ item.reason or '—' }}{% if item.last_query %} · {{ item.last_query }}{% endif %}</span></td>
+                </tr>
+              {% else %}
+                <tr><td colspan="4" class="empty-row">درخواستی ثبت نشده است.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <!-- ============================================ API reference -->
+    <section data-panel="api" hidden>
+      <header class="section__head">
+        <div>
+          <h1 class="section__title">مرجع API</h1>
+          <p class="section__lead">همان APIهایی که این کنسول و ویجت از آن‌ها استفاده می‌کنند.</p>
+        </div>
+      </header>
+      <section class="card">
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th style="width:110px">متد</th><th style="width:220px">مسیر</th><th>توضیح</th></tr></thead>
+            <tbody>
+              <tr><td><code>GET</code></td><td class="ltr"><code>/health</code></td><td>سلامت سرویس، موتور و دیتابیس</td></tr>
+              <tr><td><code>POST</code></td><td class="ltr"><code>/api/chat</code></td><td>پاسخ به پیام کاربر و ثبت گفت‌وگو</td></tr>
+              <tr><td><code>GET</code></td><td class="ltr"><code>/api/history</code></td><td>تاریخچهٔ یک نشست</td></tr>
+              <tr><td><code>POST</code></td><td class="ltr"><code>/api/feedback</code></td><td>ثبت بازخورد مفید / مفید نبود</td></tr>
+              <tr><td><code>POST</code></td><td class="ltr"><code>/api/handoff</code></td><td>درخواست کارشناس و دریافت شمارهٔ تیکت</td></tr>
+              <tr><td><code>GET</code></td><td class="ltr"><code>/api/suggestions</code></td><td>پیشنهاد تکمیل خودکار پرسش</td></tr>
+              <tr><td><code>GET</code></td><td class="ltr"><code>/api/faqs</code></td><td>فهرست و جست‌وجوی دانشنامه</td></tr>
+              <tr><td><code>POST</code></td><td class="ltr"><code>/api/faqs</code></td><td>افزودن پرسش (نیازمند توکن در صورت فعال بودن)</td></tr>
+              <tr><td><code>GET</code></td><td class="ltr"><code>/api/faqs/&lt;id&gt;</code></td><td>دریافت یک پرسش</td></tr>
+              <tr><td><code>PUT</code></td><td class="ltr"><code>/api/faqs/&lt;id&gt;</code></td><td>ویرایش پرسش</td></tr>
+              <tr><td><code>DELETE</code></td><td class="ltr"><code>/api/faqs/&lt;id&gt;</code></td><td>حذف پرسش</td></tr>
+              <tr><td><code>GET</code></td><td class="ltr"><code>/api/categories</code></td><td>دسته‌ها و تعداد پرسش هرکدام</td></tr>
+              <tr><td><code>GET</code></td><td class="ltr"><code>/api/stats</code></td><td>شاخص‌های داشبورد به‌صورت JSON</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </div>
+</div>
+
+<!-- ================================================== faq modal -->
+<div class="modal" id="faqModal" hidden>
+  <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="faqModalTitle">
+    <div class="modal__head">
+      <h2 class="card__title" id="faqModalTitle">پرسش جدید</h2>
+      <button class="btn btn--ghost btn--sm" id="closeModal" type="button">بستن</button>
+    </div>
+    <form class="modal__body" id="faqForm">
+      <input type="hidden" id="faqId">
+      <div class="field" id="fieldQuestion">
+        <label for="faqQuestion">پرسش اصلی</label>
+        <input id="faqQuestion" required maxlength="300" placeholder="مثلاً: هزینه ارسال چقدر است؟">
+        <span class="field__error" data-error="question"></span>
+      </div>
+      <div class="field" id="fieldAnswer">
+        <label for="faqAnswer">پاسخ</label>
+        <textarea id="faqAnswer" required maxlength="4000" placeholder="پاسخ دقیق و کوتاه…"></textarea>
+        <span class="field__error" data-error="answer"></span>
+      </div>
+      <div class="field">
+        <label for="faqCategoryInput">دسته</label>
+        <input id="faqCategoryInput" list="categoryOptions" maxlength="60" placeholder="سفارش و ارسال">
+        <datalist id="categoryOptions">
+          {% for item in categories %}<option value="{{ item.category }}"></option>{% endfor %}
+        </datalist>
+      </div>
+      <div class="field">
+        <label for="faqVariants">عبارت‌های جایگزین (هر خط یک عبارت)</label>
+        <textarea id="faqVariants" placeholder="چند روزه می‌رسه؟&#10;زمان تحویل چقدره؟"></textarea>
+        <span class="field__hint">این عبارت‌ها هم ایندکس می‌شوند و درک پرسش‌های محاوره‌ای را بهتر می‌کنند.</span>
+      </div>
+      <span class="field__error" data-error="general"></span>
+    </form>
+    <div class="modal__foot">
+      <button class="btn btn--ghost" id="cancelModal" type="button">انصراف</button>
+      <button class="btn btn--primary" id="saveFaq" type="button">ذخیره پرسش</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>
+{% endblock %}

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ brand_name }} — {{ brand_tagline }}{% endblock %}</title>
+  <meta name="description" content="{% block description %}همیار، دستیار هوشمند پشتیبانی مشتریان: پاسخ فوری بر پایهٔ دانشنامهٔ رسمی، نمایش شفاف میزان اطمینان و اتصال به کارشناس انسانی.{% endblock %}">
+  <meta name="theme-color" content="#4338ca">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar__in">
+      <a class="brand" href="{{ url_for('pages.index') }}">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.4 8.9 8.9 0 0 1-3.2-.6L4 21l1.4-4.3A8.2 8.2 0 0 1 4 11.5 8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5z"/>
+            <path d="M9 11.5h.01M12.5 11.5h.01M16 11.5h.01"/>
+          </svg>
+        </span>
+        <span>
+          <span class="brand__name">{{ brand_name }}</span>
+          <span class="brand__tag">پلتفرم پشتیبانی هوشمند مشتریان</span>
+        </span>
+      </a>
+      <nav class="topnav" aria-label="ناوبری اصلی">
+        <a href="{{ url_for('pages.index') }}" {% if request.endpoint == 'pages.index' %}aria-current="page"{% endif %}>گفت‌وگو</a>
+        <a href="{{ url_for('pages.embed') }}" {% if request.endpoint == 'pages.embed' %}aria-current="page"{% endif %}>ویجت سایت</a>
+        <a href="{{ url_for('pages.admin') }}" {% if request.endpoint == 'pages.admin' %}aria-current="page"{% endif %}>کنسول پشتیبانی</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    {% block content %}{% endblock %}
+  </main>
+
+  <div class="toast-wrap" id="toasts" role="status" aria-live="polite"></div>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

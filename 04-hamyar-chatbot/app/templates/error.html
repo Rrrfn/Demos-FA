@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}خطا — {{ brand_name }}{% endblock %}
+
+{% block content %}
+<section class="card" style="margin-block:3rem; padding:clamp(1.5rem,4vw,3rem); text-align:center">
+  <p class="badge badge--danger" style="margin-bottom:.8rem">
+    {{ error.status_code if error.status_code else 500 }}
+  </p>
+  <h1 class="section__title" style="font-size:1.6rem">مشکلی پیش آمد</h1>
+  <p class="muted" style="margin-top:.6rem">{{ error.message if error.message else 'خطای غیرمنتظره' }}</p>
+  <div class="row" style="justify-content:center; margin-top:1.4rem">
+    <a class="btn btn--primary" href="{{ url_for('pages.index') }}">بازگشت به گفت‌وگو</a>
+    <a class="btn btn--ghost" href="{{ url_for('pages.admin') }}">کنسول پشتیبانی</a>
+  </div>
+</section>
+{% endblock %}

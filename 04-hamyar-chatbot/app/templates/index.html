@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}{{ brand_name }} — گفت‌وگو با دستیار پشتیبانی{% endblock %}
+
+{% block content %}
+<div class="shell" id="chatRoot"
+     data-samples='{{ sample_questions | tojson }}'
+     data-high="{{ engine_stats.high_confidence }}">
+
+  <!-- ------------------------------------------------------------ sidebar -->
+  <aside class="side">
+    <section class="card side__block">
+      <button class="btn btn--primary btn--block" id="newChat" type="button">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        گفت‌وگوی جدید
+      </button>
+      <p class="tiny muted" style="margin-top:.6rem">
+        تاریخچهٔ گفت‌وگو روی همین مرورگر نگه داشته می‌شود.
+      </p>
+    </section>
+
+    <section class="card side__block">
+      <h2 class="side__title">دسته‌بندی موضوع‌ها</h2>
+      <div class="cat-list" id="catList">
+        {% for item in categories %}
+          <button type="button" data-category="{{ item.category }}">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+            <span>{{ item.category }}</span>
+            <span class="count">{{ item.count | fa_digits }}</span>
+          </button>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="card side__block">
+      <h2 class="side__title">گفت‌وگوهای من</h2>
+      <div class="history-list" id="historyList">
+        <p class="tiny muted" id="historyEmpty">هنوز گفت‌وگویی ثبت نشده است.</p>
+      </div>
+      <button class="btn btn--ghost btn--sm btn--block" id="clearThread" type="button" style="margin-top:.7rem">
+        پاک‌کردن تاریخچهٔ این مرورگر
+      </button>
+    </section>
+  </aside>
+
+  <!-- --------------------------------------------------------------- chat -->
+  <section class="chat" aria-label="گفت‌وگو با دستیار">
+    <header class="chat__head">
+      <span class="chat__avatar" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v3M12 18v3M4.2 12h3M16.8 12h3M6.4 6.4l2.1 2.1M15.5 15.5l2.1 2.1M17.6 6.4l-2.1 2.1M8.5 15.5l-2.1 2.1"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </span>
+      <div>
+        <p class="chat__title">{{ brand_name }} · دستیار پشتیبانی</p>
+        <p class="chat__sub">
+          <span class="status-dot" aria-hidden="true"></span>
+          آنلاین — پاسخ بر پایهٔ دانشنامهٔ رسمی
+          <span class="badge badge--ai">هوش مصنوعی</span>
+        </p>
+      </div>
+      <div class="chat__head-actions">
+        <button class="btn btn--ghost btn--sm" id="handoffTop" type="button">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 11a4 4 0 1 0-8 0"/><path d="M4 20a8 8 0 0 1 16 0"/></svg>
+          کارشناس انسانی
+        </button>
+      </div>
+    </header>
+
+    <div class="thread" id="thread" aria-live="polite">
+      <!-- Empty state: rendered on the server so the first paint is instant. -->
+      <div class="empty" id="emptyState">
+        <div class="empty__hero">
+          <h1 class="empty__title">سلام 👋 چطور می‌توانم کمکتان کنم؟</h1>
+          <p class="empty__lead">
+            سؤال‌تان را به زبان خودتان بنویسید. من فقط از دانشنامهٔ پشتیبانی پاسخ می‌دهم؛
+            اگر مطمئن نباشم، پاسخ حدسی نمی‌دهم و گزینه‌های نزدیک را پیشنهاد می‌کنم.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="side__title">موضوع‌های پرتکرار</h2>
+          <div class="cat-grid">
+            {% for item in categories[:6] %}
+              <button class="cat-card" type="button" data-category="{{ item.category }}">
+                <span class="cat-card__name">{{ item.category }}</span>
+                <span class="cat-card__meta">{{ item.count | fa_digits }} پرسش پرتکرار</span>
+              </button>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div>
+          <h2 class="side__title">پیشنهاد شروع</h2>
+          <div class="prompt-list">
+            {% for question in sample_questions %}
+              <button class="chip" type="button" data-ask="{{ question }}">{{ question }}</button>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="composer">
+      <div class="quick-actions">
+        <button class="chip" type="button" data-ask="سفارشم را چطور پیگیری کنم؟">پیگیری سفارش</button>
+        <button class="chip" type="button" data-ask="هزینه ارسال چقدر است؟">هزینه ارسال</button>
+        <button class="chip" type="button" data-ask="شرایط مرجوعی چیست؟">مرجوعی کالا</button>
+        <button class="chip" type="button" data-ask="چطور با کارشناس انسانی صحبت کنم؟">کارشناس انسانی</button>
+      </div>
+      <form class="composer__box" id="composer" autocomplete="off">
+        <label class="sr-only" for="message">متن پیام</label>
+        <textarea id="message" name="message" rows="1" maxlength="500"
+                  placeholder="سؤال‌تان را بنویسید… مثلاً: سفارش من چند روزه می‌رسد؟"></textarea>
+        <button class="composer__send" id="send" type="submit" aria-label="ارسال پیام">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12L4 5l3 7-3 7 16-7z"/></svg>
+        </button>
+      </form>
+      <div class="composer__hint">
+        <span>Enter برای ارسال · Shift+Enter برای خط جدید</span>
+        <span id="charCount">۰ / ۵۰۰</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ----------------------------------------------------------- insights -->
+  <aside class="insights">
+    <section class="card side__block">
+      <h2 class="side__title">چطور پاسخ می‌دهم</h2>
+      <ol class="pipeline">
+        <li class="pipeline__step"><span class="pipeline__num">۱</span><span>نرمال‌سازی متن فارسی (اعراب، نیم‌فاصله، ارقام)</span></li>
+        <li class="pipeline__step"><span class="pipeline__num">۲</span><span>جست‌وجوی TF-IDF واژه‌ای + کاراکتری</span></li>
+        <li class="pipeline__step"><span class="pipeline__num">۳</span><span>سنجش شباهت و تعیین بازهٔ اطمینان</span></li>
+        <li class="pipeline__step"><span class="pipeline__num">۴</span><span>پاسخ از دانشنامه یا پیشنهاد کنترل‌شده</span></li>
+      </ol>
+      <p class="tiny muted" style="margin-top:.7rem">
+        دانشنامه: <b id="kbCount">{{ engine_stats.faqs | fa_digits }}</b> پرسش ·
+        <b id="kbEntries">{{ engine_stats.entries | fa_digits }}</b> واحد ایندکس‌شده
+      </p>
+    </section>
+
+    <section class="card side__block">
+      <h2 class="side__title">شفافیت پاسخ</h2>
+      <div class="metric">
+        <span class="metric__label">وضعیت آخرین پاسخ</span>
+        <span class="metric__value" id="mConfidence">—</span>
+        <div class="conf-bar"><span id="mConfBar" style="width:0%"></span></div>
+      </div>
+      <div class="metric">
+        <span class="metric__label">درصد تطبیق با دانشنامه</span>
+        <span class="metric__value" id="mScore">—</span>
+      </div>
+      <div class="metric">
+        <span class="metric__label">پرسش مرجع</span>
+        <span class="metric__value small" id="mMatched">—</span>
+      </div>
+      <div class="metric">
+        <span class="metric__label">زمان پاسخ موتور</span>
+        <span class="metric__value" id="mLatency">—</span>
+      </div>
+      <div class="metric">
+        <span class="metric__label">دستهٔ موضوع</span>
+        <span class="metric__value small" id="mCategory">—</span>
+      </div>
+    </section>
+
+    <section class="card side__block">
+      <h2 class="side__title">نیاز به انسان دارید؟</h2>
+      <p class="small muted">
+        اگر پاسخ‌ها کمکتان نکرد، درخواست را به کارشناس وصل می‌کنم و یک شمارهٔ تیکت
+        برایتان ثبت می‌شود.
+      </p>
+      <button class="btn btn--soft btn--block" id="handoffSide" type="button" style="margin-top:.7rem">
+        اتصال به کارشناس انسانی
+      </button>
+    </section>
+  </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
+{% endblock %}

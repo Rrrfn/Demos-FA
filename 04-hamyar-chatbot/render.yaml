@@ -1,0 +1,26 @@
+# Render Blueprint — همیار (Web Service)
+#
+# A single worker is intentional: the retrieval index lives in process memory,
+# so one worker keeps admin edits instantly visible to every thread. Threads
+# provide the concurrency instead.
+services:
+  - type: web
+    name: hamyar-chatbot
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 90
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.20
+      - key: HAMYAR_ENV
+        value: production
+      - key: HAMYAR_SECRET_KEY
+        generateValue: true
+# Free instances have an ephemeral disk, so data/hamyar.db is recreated and
+# reseeded on every deploy. Attach a disk and set HAMYAR_DB_PATH to keep history:
+#    disk:
+#      name: hamyar-data
+#      mountPath: /var/data
+#      sizeGB: 1
