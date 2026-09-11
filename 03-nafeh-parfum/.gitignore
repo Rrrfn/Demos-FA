@@ -1,0 +1,15 @@
+# سیستم‌عامل
+.DS_Store
+Thumbs.db
+
+# ویرایشگر
+.vscode/
+.idea/
+*.swp
+
+# محیط
+.env
+.env.local
+
+# لاگ‌ها
+*.log
