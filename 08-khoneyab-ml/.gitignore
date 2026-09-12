@@ -1,0 +1,35 @@
+# پایتون
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# آزمون و ابزارها
+.pytest_cache/
+.coverage
+htmlcov/
+tools/.cache/
+tools/__pycache__/
+
+# فایل‌های تولیدشده در زمان اجرا
+# دیتاست با seed ثابت ساخته می‌شود و بستهٔ مدل در زمان ساخت (build) آموزش
+# می‌بیند؛ پس هیچ‌کدام نباید در مخزن باشند.
+data/*.csv
+models/*.joblib
+models/*.json
+
+# گزارش و لاگ محلی
+*.log
+_app.pid
+
+# محیط و تنظیمات محلی
+.env
+.env.local
+
+# سیستم و ویرایشگر
+.DS_Store
+Thumbs.db
+.idea/
+*.swp

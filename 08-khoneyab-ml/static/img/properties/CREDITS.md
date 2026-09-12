@@ -1,0 +1,44 @@
+# اعتبار تصاویر
+
+همهٔ عکس‌های این پوشه از
+[ویکی‌انبار](https://commons.wikimedia.org) — مخزن رسانهٔ ویکی‌پدیا —
+برداشته شده‌اند. بیشترشان از دستهٔ «Quality images of houses» هستند که
+داوران انسانی ویکی‌انبار کیفیت عکاسی آن‌ها را تأیید کرده‌اند. مجوز هر
+فایل و نام پدیدآورنده در جدول زیر آمده است؛ در نمایش عمومی این پروژه هم
+اعتبار تصویر در صفحهٔ جزئیات ملک و در صفحهٔ «روش‌شناسی» ذکر می‌شود.
+
+**تصاویر نمادین‌اند.** هر ملک در این پروژه سینتتیک است و عکس واقعی آن ملک
+وجود ندارد؛ این تصاویر فقط برای نمایش کیفیت رابط کاربری انتخاب شده‌اند و
+نباید به‌عنوان عکس یک آگهی واقعی یا نشانهٔ وضعیت آن ملک تلقی شوند.
+
+| فایل | موضوع | منبع | مجوز | پدیدآورنده | صفحهٔ اثر |
+|---|---|---|---|---|---|
+| `exterior-01-3d-rendering-of-modern-luxury-vill.jpg` | 3D Rendering of Modern Luxury Villa Exterior with Pool | Wikimedia Commons | CC BY 4.0 | Tuantranseo | [مشاهده](https://commons.wikimedia.org/wiki/File:3D_Rendering_of_Modern_Luxury_Villa_Exterior_with_Pool.jpg) |
+| `exterior-02-modern-duplex-home-design-in-gurga.jpg` | Modern Duplex Home Design in Gurgaon – Evening View | Wikimedia Commons | CC BY-SA 4.0 | ArchitectsHive | [مشاهده](https://commons.wikimedia.org/wiki/File:Modern_Duplex_Home_Design_in_Gurgaon_%E2%80%93_Evening_View.jpg) |
+| `exterior-03-modern-residential-building-known-.jpg` | Modern residential building known as Villaggio | Wikimedia Commons | CC BY-SA 4.0 | Kwameghana | [مشاهده](https://commons.wikimedia.org/wiki/File:Modern_residential_building_known_as_Villaggio.jpg) |
+| `exterior-04-north-modern-house-testa-zanskar-j.jpg` | North Modern House Testa Zanskar Jun24 A7CR 01166 | Wikimedia Commons | CC BY-SA 4.0 | This Photo was taken by Timothy A. Gonsalves . Feel free to use my photos, but please mention me as the author. I would much appreciate if y | [مشاهده](https://commons.wikimedia.org/wiki/File:North_Modern_House_Testa_Zanskar_Jun24_A7CR_01166.jpg) |
+| `exterior-05-brand-new-park-modern-residential-.jpg` | Brand new Park Modern residential building in Bayswater, London, England (U.K.) (533311340 | Wikimedia Commons | CC BY 2.0 | Charles from Port Chester, New York | [مشاهده](https://commons.wikimedia.org/wiki/File:Brand_new_Park_Modern_residential_building_in_Bayswater,_London,_England_(U.K.)_(53331134057).jpg) |
+| `exterior-06-modern-home-dusk-creative-commons-.jpg` | Modern-home-dusk (Creative Commons) | Wikimedia Commons | CC BY 2.0 | vcmxnajg1 | [مشاهده](https://commons.wikimedia.org/wiki/File:Modern-home-dusk_(Creative_Commons).jpg) |
+| `exterior-07-modern-house-eraviputhenthurai-mar.jpg` | Modern House Eraviputhenthurai Mar24 A7C 10223 | Wikimedia Commons | CC BY-SA 4.0 | This Photo was taken by Timothy A. Gonsalves . Feel free to use my photos, but please mention me as the author. I would much appreciate if y | [مشاهده](https://commons.wikimedia.org/wiki/File:Modern_House_Eraviputhenthurai_Mar24_A7C_10223.jpg) |
+| `exterior-08-modern-residential-facade-unsplash.jpg` | Modern residential facade (Unsplash) | Wikimedia Commons | CC0 | Samuel Zeller samuelzeller | [مشاهده](https://commons.wikimedia.org/wiki/File:Modern_residential_facade_(Unsplash).jpg) |
+| `exterior-10-a-house-in-wezembeek-oppem-dsc-545.jpg` | A house in Wezembeek-Oppem (DSC 5451) | Wikimedia Commons | CC BY 4.0 | Trougnouf (Benoit Brummer) | [مشاهده](https://commons.wikimedia.org/wiki/File:A_house_in_Wezembeek-Oppem_(DSC_5451).jpg) |
+| `exterior-11-modern-residential-architecture-wi.jpg` | Modern residential architecture with curved design and exposed brick in Mysore, India | Wikimedia Commons | CC BY 2.0 | Evan Lovely | [مشاهده](https://commons.wikimedia.org/wiki/File:Modern_residential_architecture_with_curved_design_and_exposed_brick_in_Mysore,_India.jpg) |
+| `exterior-12-modern-residential-driveway-costa-.jpg` | Modern residential driveway Costa dels Pins Mallorca | Wikimedia Commons | CC BY-SA 4.0 | Steffen Mokosch | [مشاهده](https://commons.wikimedia.org/wiki/File:Modern_residential_driveway_Costa_dels_Pins_Mallorca.jpg) |
+| `exterior-13-abbasi-house-jpg.jpg` | Abbasi-House | Wikimedia Commons | CC BY-SA 4.0 | Amir Pashaei | [مشاهده](https://commons.wikimedia.org/wiki/File:Abbasi-House.jpg) |
+| `exterior-14-new-modern-residential-buildings-g.jpg` | New modern residential buildings - geograph.org.uk - 3075631 | Wikimedia Commons | CC BY-SA 2.0 | Ross Watson | [مشاهده](https://commons.wikimedia.org/wiki/File:New_modern_residential_buildings_-_geograph.org.uk_-_3075631.jpg) |
+| `exterior-15-49-and-51-osbaldwick-village-dsc-4.jpg` | 49 and 51 Osbaldwick Village - DSC 4914 | Wikimedia Commons | CC BY-SA 4.0 | Tadeusz Hare | [مشاهده](https://commons.wikimedia.org/wiki/File:49_and_51_Osbaldwick_Village_-_DSC_4914.jpg) |
+| `exterior-16-pleven-modern-residential-building.jpg` | Pleven modern residential buildings TodorBozhinov | Wikimedia Commons | CC BY-SA 3.0 | uploader ( User:Martyr ) | [مشاهده](https://commons.wikimedia.org/wiki/File:Pleven_modern_residential_buildings_TodorBozhinov.jpg) |
+| `exterior-17-alexandrov-lenin-str-69-house-2024.jpg` | Alexandrov Lenin str 69 House 2024-05-01 0060 | Wikimedia Commons | CC BY-SA 3.0 | Mike1979 Russia | [مشاهده](https://commons.wikimedia.org/wiki/File:Alexandrov_Lenin_str_69_House_2024-05-01_0060.jpg) |
+| `exterior-18-staapli-3-modern-buildings-jpg.jpg` | Staapli 3 modern buildings | Wikimedia Commons | CC BY-SA 4.0 | Quinn.feller | [مشاهده](https://commons.wikimedia.org/wiki/File:Staapli_3_modern_buildings.jpg) |
+| `exterior-19-alexandrov-rastvorovs-house-2024-0.jpg` | Alexandrov Rastvorovs House 2024-05-01 0065 | Wikimedia Commons | CC BY-SA 3.0 | Mike1979 Russia | [مشاهده](https://commons.wikimedia.org/wiki/File:Alexandrov_Rastvorovs_House_2024-05-01_0065.jpg) |
+| `exterior-20-baddesley-clinton-house-east-2016-.jpg` | Baddesley Clinton house east 2016 | Wikimedia Commons | CC BY-SA 4.0 | DeFacto | [مشاهده](https://commons.wikimedia.org/wiki/File:Baddesley_Clinton_house_east_2016.jpg) |
+| `interior-21-modern-living-room-with-stylish-fu.jpg` | Modern living room with stylish furniture and a view of the outdoors in a cozy apartment s | Wikimedia Commons | CC BY 2.0 | Shixart1985 | [مشاهده](https://commons.wikimedia.org/wiki/File:Modern_living_room_with_stylish_furniture_and_a_view_of_the_outdoors_in_a_cozy_apartment_setting.jpg) |
+| `interior-22-a-standard-living-room-in-accra-jp.jpg` | A standard living room in Accra | Wikimedia Commons | CC BY-SA 4.0 | Kwameghana | [مشاهده](https://commons.wikimedia.org/wiki/File:A_standard_living_room_in_Accra.jpg) |
+| `interior-23-modern-kitchen-gnangarra-jpg.jpg` | Modern kitchen gnangarra | Wikimedia Commons | CC BY 2.5 au | User:Gnangarra | [مشاهده](https://commons.wikimedia.org/wiki/File:Modern_kitchen_gnangarra.JPG) |
+| `interior-24-2025-05-08-11-54-00-kitchen-and-di.jpg` | 2025-05-08 11 54 00 Kitchen and dining area within Playpad Bucks in Middletown Township, B | Wikimedia Commons | CC BY-SA 4.0 | Famartin | [مشاهده](https://commons.wikimedia.org/wiki/File:2025-05-08_11_54_00_Kitchen_and_dining_area_within_Playpad_Bucks_in_Middletown_Township,_Bucks_County,_Pennsylvania.jpg) |
+| `interior-25-sauna-room-next-to-a-bedroom-in-a-.jpg` | Sauna room next to a bedroom in a modern apartment | Wikimedia Commons | CC BY 2.0 | Shixart1985 | [مشاهده](https://commons.wikimedia.org/wiki/File:Sauna_room_next_to_a_bedroom_in_a_modern_apartment.jpg) |
+| `interior-26-first-floor-apartment-south-bedroo.jpg` | FIRST FLOOR APARTMENT SOUTH BEDROOM INTERIOR SHOWING PAIRED 6-LIGHT OVER 6-LIGHT DOUBLE-HU | Wikimedia Commons | Public domain | Related names: Southern California Edison Company, Owner Southern Sierras Power Company, Builder | [مشاهده](https://commons.wikimedia.org/wiki/File:FIRST_FLOOR_APARTMENT_SOUTH_BEDROOM_INTERIOR_SHOWING_PAIRED_6-LIGHT_OVER_6-LIGHT_DOUBLE-HUNG,_WOOD-FRAMED_WINDOWS._VIEW_TO_SOUTH._-_Lee_Vining_Creek_Hydroelectric_System,_HAER_CAL,26-LEVIN.V,1A-22.tif) |
+| `interior-27-villa-tugendhat-haus-house-brno-br.jpg` | Villa Tugendhat Haus house Brno Brünn Bauhaus classic dining room MD284 | Wikimedia Commons | CC BY-SA 4.0 | Mike Duchstein | [مشاهده](https://commons.wikimedia.org/wiki/File:Villa_Tugendhat_Haus_house_Brno_Br%C3%BCnn_Bauhaus_classic_dining_room_MD284.jpg) |
+| `interior-28-200-study-room-piusx-jpg.jpg` | 200 study-room PiusX | Wikimedia Commons | Public domain | Czaich Á. Gilbert és Fráter Aladár . Budapest 1907 | [مشاهده](https://commons.wikimedia.org/wiki/File:200_study-room_PiusX.jpg) |
+| `interior-29-entry-room-ford-bacon-house-jpg.jpg` | Entry room, Ford–Bacon House | Wikimedia Commons | CC BY-SA 4.0 | Rmhermen | [مشاهده](https://commons.wikimedia.org/wiki/File:Entry_room,_Ford%E2%80%93Bacon_House.jpg) |
+| `interior-30-ban-bathroom-nus-jpg.jpg` | Ban-Bathroom-Nus | Wikimedia Commons | Public domain | User:Mattes | [مشاهده](https://commons.wikimedia.org/wiki/File:Ban-Bathroom-Nus.JPG) |

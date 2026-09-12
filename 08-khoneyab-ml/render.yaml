@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: khoneyab-ml
+    runtime: python
+    plan: free
+    region: frankfurt
+    rootDir: 08-khoneyab-ml
+    buildCommand: pip install -r requirements.txt && python -c "from khoneyab.train import train_all; train_all()"
+    startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true --browser.gatherUsageStats false
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.10.11"

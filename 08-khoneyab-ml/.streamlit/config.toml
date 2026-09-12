@@ -1,0 +1,23 @@
+[theme]
+base = "light"
+primaryColor = "#A8854E"
+backgroundColor = "#FAF7F2"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#12100E"
+font = "sans serif"
+
+[server]
+#: پوشهٔ static کنار فایل اجرا با نشانی /app/static/ سرو می‌شود؛ عکس‌های
+#: واقعی ملک‌ها از همان مسیر می‌آیند.
+enableStaticServing = true
+headless = true
+
+[browser]
+gatherUsageStats = false
+
+[client]
+toolbarMode = "minimal"
+showErrorDetails = true
+
+[runner]
+magicEnabled = false

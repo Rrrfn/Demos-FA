@@ -1,0 +1,7 @@
+-r requirements.txt
+
+# آزمون
+pytest>=7.4
+
+# ابزار جمع‌آوری عکس (tools/fetch_photos.py) — برای رمزگشایی و بررسی ابعاد فایل
+Pillow>=10.0
