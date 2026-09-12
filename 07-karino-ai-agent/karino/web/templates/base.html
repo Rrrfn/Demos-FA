@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}کارینو{% endblock %}</title>
+<meta name="description" content="کارینو — پلتفرم هوش استخدام: جمع‌آوری آگهی از منابع چندگانه، تطبیق توضیح‌پذیر و تولید پیشنهاد">
+<link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='fonts/fonts.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+{% macro score_pill(total, verdict) %}
+  <span class="score-pill band-{{ score_band(total) }}">
+    <b>{{ total|fa }}</b>
+    <small>{{ verdict|verdict if verdict else 'بدون امتیاز' }}</small>
+  </span>
+{% endmacro %}
+
+{% macro source_badge(source) %}
+  {% set labels = {'jobvision': 'جاب‌ویژن', 'remotive': 'Remotive', 'remoteok': 'RemoteOK',
+                   'arbeitnow': 'Arbeitnow', 'weworkremotely': 'We Work Remotely',
+                   'hn_hiring': 'Hacker News', 'seed': 'نمونهٔ آفلاین'} %}
+  <span class="badge src-{{ source }}">{{ labels.get(source, source) }}</span>
+{% endmacro %}
+
+{% macro empty_state(title, hint, action_url=None, action_label=None, method='post') %}
+  {# ``method='get'`` لینک می‌سازد و ``method='post'`` فرم؛ بدون این تمایز
+     یک لینک فیلتر به‌شکل فرم ارسال می‌شد و کار نمی‌کرد. #}
+  <div class="empty">
+    <div class="empty-icon" aria-hidden="true">◎</div>
+    <h3>{{ title }}</h3>
+    <p>{{ hint }}</p>
+    {% if action_url %}
+      {% if method == 'get' %}
+        <a class="btn btn-primary" href="{{ action_url }}">{{ action_label }}</a>
+      {% else %}
+        <form method="post" action="{{ action_url }}">
+          <button class="btn btn-primary" type="submit">{{ action_label }}</button>
+        </form>
+      {% endif %}
+    {% endif %}
+  </div>
+{% endmacro %}
+
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="/">
+      <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="" width="30" height="30">
+      <span class="brand-text">
+        <b>کارینو</b>
+        <small>هوش استخدام</small>
+      </span>
+    </a>
+
+    <nav class="nav">
+      <a href="/" class="{{ 'is-active' if active == 'overview' }}">
+        <span class="ico">▦</span> نمای کلی
+      </a>
+      <a href="/jobs" class="{{ 'is-active' if active == 'jobs' }}">
+        <span class="ico">☰</span> همهٔ آگهی‌ها
+      </a>
+      <a href="/jobs?min=72" class="{{ 'is-active' if active == 'recommended' }}">
+        <span class="ico">★</span> پیشنهاد ویژه
+      </a>
+      <a href="/saved" class="{{ 'is-active' if active == 'saved' }}">
+        <span class="ico">⚑</span> ذخیره‌شده
+      </a>
+      <a href="/proposal" class="{{ 'is-active' if active == 'proposal' }}">
+        <span class="ico">✎</span> کارگاه پیشنهاد
+      </a>
+      <span class="nav-sep">سامانه</span>
+      <a href="/sources" class="{{ 'is-active' if active == 'sources' }}">
+        <span class="ico">⇅</span> منابع داده
+      </a>
+      <a href="/activity" class="{{ 'is-active' if active == 'activity' }}">
+        <span class="ico">◷</span> فعالیت
+      </a>
+      <a href="/profile" class="{{ 'is-active' if active == 'profile' }}">
+        <span class="ico">◈</span> پروفایل و نمونه‌کار
+      </a>
+    </nav>
+
+    <div class="sidebar-foot">
+      <span class="badge badge-soft">{{ (settings.env if settings else '')|env_label }}</span>
+      <small>نسخهٔ {{ (app_version or '۱.۰')|fa_digits }}</small>
+    </div>
+  </aside>
+
+  <main class="content">
+    <header class="topbar">
+      <form class="topbar-search" method="get" action="/jobs" role="search">
+        <input type="search" name="q" placeholder="جست‌وجو در عنوان، کارفرما و شرح آگهی…"
+               value="{{ search_value or '' }}" aria-label="جست‌وجو">
+        <button class="btn btn-ghost" type="submit">جست‌وجو</button>
+      </form>
+      <div class="topbar-actions">
+        <a class="btn btn-ghost" href="/api/v1/jobs" target="_blank" rel="noopener">API</a>
+        <a class="btn btn-ghost" href="/health" target="_blank" rel="noopener">سلامت</a>
+        <form method="post" action="/collect">
+          <input type="hidden" name="next" value="{{ request.path }}">
+          <button class="btn btn-primary" type="submit">جمع‌آوری تازه</button>
+        </form>
+      </div>
+    </header>
+
+    {% if banner %}
+      <div class="banner banner-{{ banner.level }}">
+        <b>{{ banner.title }}</b>
+        <span>{{ banner.text }}</span>
+      </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+
+    <footer class="page-foot">
+      <span>کارینو — نمونه‌کار نمایشی · خط لولهٔ واقعی روی منابع عمومی</span>
+      <span>مجموع وزن عامل‌های امتیازدهی: ۱۰۰</span>
+    </footer>
+  </main>
+</div>
+
+<script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% block title %}{{ job.title }} — کارینو{% endblock %}
+
+{% block content %}
+<nav class="crumbs"><a href="/jobs">آگهی‌ها</a> <span>›</span> <span>جزئیات و تحلیل تطابق</span></nav>
+
+<section class="detail-head">
+  <div class="detail-head-main">
+    <h1>{{ job.title }}</h1>
+    <div class="job-row-meta">
+      {% if job.company %}<span class="strong">{{ job.company }}</span>{% endif %}
+      {{ source_badge(job.source) }}
+      {% if job.remote %}<span class="tag tag-soft">دورکاری</span>{% endif %}
+      {% if job.location %}<span class="muted">{{ job.location }}</span>{% endif %}
+      <span class="muted">منتشرشده {{ job.published_ts|timeago }}</span>
+      {% if job.salary %}<span class="tag tag-salary">{{ job.salary }}</span>{% endif %}
+    </div>
+    <div class="detail-actions">
+      {% if job.url %}
+        <a class="btn btn-primary" href="{{ job.url }}" target="_blank" rel="noopener">مشاهدهٔ آگهی اصلی ↗</a>
+      {% endif %}
+      <form method="post" action="/saved/{{ job.id }}/toggle">
+        <input type="hidden" name="next" value="/jobs/{{ job.id }}">
+        <button class="btn btn-ghost" type="submit">
+          {{ '⚑ برداشتن از ذخیره‌شده' if job.saved else '⚑ افزودن به ذخیره‌شده' }}
+        </button>
+      </form>
+      <form method="post" action="/jobs/{{ job.id }}/rescore">
+        <button class="btn btn-ghost" type="submit">↻ امتیازدهی دوباره</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="detail-score">
+    <span class="score-big band-{{ score_band(analysis.score) }}">{{ analysis.score|fa }}</span>
+    <b>{{ analysis.verdict_label }}</b>
+    <small>امتیاز تطابق از ۱۰۰</small>
+  </div>
+</section>
+
+<div class="grid-2 grid-wide-left">
+  <section class="card">
+    <div class="card-head">
+      <h2>چرا این امتیاز؟</h2>
+      <span class="hint">نُه عامل، مجموع سقف ۱۰۰</span>
+    </div>
+
+    <ul class="factor-list">
+      {% for f in analysis.factors %}
+        <li class="factor">
+          <div class="factor-top">
+            <b>{{ f.label }}</b>
+            <span class="factor-points">
+              {{ f.points|fa }} <small>/ {{ f.max_points|fa }}</small>
+            </span>
+          </div>
+          <span class="factor-track">
+            <span class="factor-fill {{ 'is-full' if f.percent >= 100 else '' }}"
+                  style="width: {{ f.percent }}%"></span>
+          </span>
+          <p class="factor-detail">{{ f.detail }}</p>
+          {% if f.evidence %}
+            <div class="tag-row">
+              {% for e in f.evidence %}<span class="tag tag-evidence">{{ e }}</span>{% endfor %}
+            </div>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+
+    <details class="reasons">
+      <summary>فهرست دلایل به‌ترتیب اهمیت</summary>
+      <ul>
+        {% for r in analysis.reasons %}<li>{{ r }}</li>{% endfor %}
+      </ul>
+    </details>
+  </section>
+
+  <div class="stack">
+    <section class="card">
+      <div class="card-head"><h2>تحلیل مهارت</h2></div>
+      <h3 class="sub-head">مهارت‌های منطبق ({{ analysis.matched_skills|length|fa }})</h3>
+      <div class="tag-row">
+        {% for s in analysis.matched_skills %}<span class="tag tag-match">{{ s }}</span>{% else %}
+          <span class="muted">هیچ مهارت شناخته‌شده‌ای پیدا نشد.</span>
+        {% endfor %}
+      </div>
+      {% if analysis.missing_skills %}
+        <h3 class="sub-head">شکاف‌های مهم</h3>
+        <div class="tag-row">
+          {% for s in analysis.missing_skills %}<span class="tag tag-miss">{{ s }}</span>{% endfor %}
+        </div>
+      {% endif %}
+      <dl class="facts">
+        <div><dt>نوع همکاری</dt><dd>{{ job.employment|engagement }}</dd></div>
+        <div><dt>نوع محل</dt><dd>{{ 'دورکاری' if job.remote else 'حضوری یا نامشخص' }}</dd></div>
+        <div><dt>مشاهده در دورهای جمع‌آوری</dt><dd>{{ job.seen_count|fa }}</dd></div>
+        <div><dt>نخستین کشف</dt><dd>{{ job.first_seen_ts|timeago }}</dd></div>
+      </dl>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>نمونه‌کارهای پیشنهادی برای استناد</h2></div>
+      <p class="hint">بر اساس هم‌پوشانی مهارت با همین آگهی انتخاب شده‌اند</p>
+      <ul class="project-list">
+        {% for p in analysis.projects %}
+          <li>
+            <b>{{ p.title }}</b>
+            <p>{{ p.summary }}</p>
+            <div class="tag-row">
+              {% for s in p.stack %}<span class="tag tag-evidence">{{ s }}</span>{% endfor %}
+              {% if p.metric %}<span class="tag tag-soft">{{ p.metric }}</span>{% endif %}
+            </div>
+          </li>
+        {% else %}
+          <li class="muted">نمونه‌کار متناسبی یافت نشد.</li>
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+</div>
+
+<section class="card">
+  <div class="card-head"><h2>شرح آگهی</h2></div>
+  <p class="description">{{ job.description or 'شرحی برای این آگهی ثبت نشده است.' }}</p>
+  {% if job.tags %}
+    <div class="tag-row">
+      {% for t in job.tags %}<span class="tag tag-evidence">{{ t }}</span>{% endfor %}
+    </div>
+  {% endif %}
+</section>
+
+<section class="card" id="proposal">
+  <div class="card-head">
+    <h2>کارگاه پیشنهاد</h2>
+    <span class="hint">متن از نمونه‌کارهای همین آگهی به‌عنوان مدرک استفاده می‌کند</span>
+  </div>
+
+  <form class="proposal-form" method="post" action="/jobs/{{ job.id }}/proposal">
+    <div class="filter-field">
+      <label for="p-tone">لحن</label>
+      <select id="p-tone" name="tone">
+        {% for key, t in tones.items() %}
+          <option value="{{ key }}">{{ t.label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filter-field">
+      <label for="p-variant">طول</label>
+      <select id="p-variant" name="variant">
+        <option value="standard">استاندارد</option>
+        <option value="short">کوتاه</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" type="submit">ساخت پیشنهاد</button>
+  </form>
+
+  {% if proposals %}
+    <table class="table table-compact">
+      <thead><tr><th>لحن</th><th>طول</th><th>نویسنده</th><th>ساخته‌شده</th><th></th></tr></thead>
+      <tbody>
+        {% for p in proposals %}
+          <tr>
+            <td>{{ tones[p.tone].label if p.tone in tones else p.tone }}</td>
+            <td>{{ 'کوتاه' if p.variant == 'short' else 'استاندارد' }}</td>
+            <td>{{ 'مدل زبانی' if p.writer == 'llm' else 'قاعده‌محور' }}</td>
+            <td>{{ p.created_ts|timeago }}</td>
+            <td>
+              <button class="btn btn-ghost btn-sm" type="button"
+                      data-load-proposal="{{ job.id }}" data-tone="{{ p.tone }}" data-variant="{{ p.variant }}">
+                نمایش متن
+              </button>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">هنوز پیشنهادی برای این آگهی ساخته نشده است.</p>
+  {% endif %}
+
+  <div id="proposal-output" class="proposal-output" hidden>
+    <div class="proposal-output-head">
+      <b id="proposal-meta"></b>
+      <button class="btn btn-ghost btn-sm" type="button" id="proposal-copy">کپی متن</button>
+    </div>
+    <pre id="proposal-body"></pre>
+  </div>
+</section>
+{% endblock %}

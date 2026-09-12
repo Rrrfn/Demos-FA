@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# پایگاه دادهٔ محلی و فایل‌های جانبی WAL — هرگز نباید منتشر شوند
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# خروجی‌های اجرا
+*.log
+.pytest_cache/
+.coverage

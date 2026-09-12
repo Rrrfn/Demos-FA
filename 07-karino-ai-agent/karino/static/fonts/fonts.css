@@ -1,0 +1,23 @@
+/* فونت محلی وزیرمتن — داشبوردها و وب‌اپ‌ها */
+
+@font-face {
+  font-family: "Vazirmatn";
+  src: url("Vazirmatn-Regular.woff2") format("woff2");
+  font-weight: 300 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Vazirmatn";
+  src: url("Vazirmatn-Bold.woff2") format("woff2");
+  font-weight: 600 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Vazirmatn";
+  src: url("Vazirmatn-Black.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}

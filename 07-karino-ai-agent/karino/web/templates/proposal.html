@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}کارگاه پیشنهاد — کارینو{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>کارگاه پیشنهاد</h1>
+    <p class="lede">
+      یک آگهی را انتخاب کنید تا پیشنهاد مخصوص همان آگهی ساخته شود؛ متن از
+      نمونه‌کارهایی که مهارت‌های منطبق را پوشش می‌دهند به‌عنوان مدرک استفاده می‌کند.
+    </p>
+  </div>
+</section>
+
+<div class="grid-2 grid-wide-left">
+  <section class="card">
+    <div class="card-head">
+      <h2>انتخاب آگهی</h2>
+      <span class="hint">{{ jobs|length|fa }} آگهی با بالاترین امتیاز</span>
+    </div>
+
+    <div class="pick-list">
+      {% for j in jobs %}
+        <a class="pick {{ 'is-selected' if selected and selected.id == j.id }}"
+           href="/proposal?job={{ j.id }}&tone={{ tone }}">
+          <span class="pick-score band-{{ score_band(j.score) }}">{{ j.score|fa }}</span>
+          <span class="pick-body">
+            <b>{{ j.title }}</b>
+            <small>{{ j.company or 'کارفرما نامشخص' }} · {{ j.source }}</small>
+          </span>
+          {% if j.has_proposal %}<span class="tag tag-soft">پیشنهاد دارد</span>{% endif %}
+        </a>
+      {% else %}
+        <p class="muted">هنوز آگهی‌ای برای انتخاب وجود ندارد.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <div class="stack">
+    <section class="card">
+      <div class="card-head"><h2>تنظیمات پیشنهاد</h2></div>
+
+      {% if selected %}
+        <div class="selected-brief">
+          <b>{{ selected.title }}</b>
+          <span class="muted">{{ selected.company or 'کارفرما نامشخص' }}</span>
+          <a class="link" href="/jobs/{{ selected.id }}">تحلیل تطابق کامل ›</a>
+        </div>
+
+        <form class="proposal-form" method="post" action="/jobs/{{ selected.id }}/proposal">
+          <div class="filter-field">
+            <label for="w-tone">لحن</label>
+            <select id="w-tone" name="tone">
+              {% for key, t in tones.items() %}
+                <option value="{{ key }}" {{ 'selected' if key == tone }}>{{ t.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="filter-field">
+            <label for="w-variant">طول</label>
+            <select id="w-variant" name="variant">
+              <option value="standard">استاندارد</option>
+              <option value="short">کوتاه</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" type="submit">ساخت پیشنهاد و نمایش</button>
+        </form>
+
+        <div id="proposal-output" class="proposal-output" hidden>
+          <div class="proposal-output-head">
+            <b id="proposal-meta"></b>
+            <button class="btn btn-ghost btn-sm" type="button" id="proposal-copy">کپی متن</button>
+          </div>
+          <pre id="proposal-body"></pre>
+        </div>
+        <p class="hint">
+          پس از ساخت، متن در پایگاه داده ذخیره می‌شود و بار بعد بی‌درنگ نمایش
+          داده می‌شود. نویسنده به‌صورت پیش‌فرض موتور قاعده‌محور است؛ اگر
+          <code>KARINO_LLM_URL</code> تنظیم شده باشد، همان مسیر از مدل زبانی
+          استفاده می‌کند و در صورت قطعی، بی‌صدا به متن قاعده‌محور برمی‌گردد.
+        </p>
+      {% else %}
+        {{ empty_state("آگهی‌ای انتخاب نشده",
+                       "از فهرست کنار، یک آگهی را انتخاب کنید تا کارگاه فعال شود.") }}
+      {% endif %}
+    </section>
+
+    {% if recent_proposals %}
+      <section class="card">
+        <div class="card-head"><h2>پیشنهادهای اخیر</h2></div>
+        <table class="table table-compact">
+          <thead><tr><th>آگهی</th><th>لحن / طول</th><th>نویسنده</th><th>زمان</th></tr></thead>
+          <tbody>
+            {% for p in recent_proposals %}
+              <tr>
+                <td><a class="link" href="/jobs/{{ p.job_id }}">{{ p.title|truncate(46) }}</a></td>
+                <td>{{ p.tone }} · {{ p.variant }}</td>
+                <td>{{ 'مدل زبانی' if p.writer == 'llm' else 'قاعده‌محور' }}</td>
+                <td>{{ p.created_ts|timeago }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

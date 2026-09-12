@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}منابع داده — کارینو{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>منابع داده</h1>
+    <p class="lede">
+      وضعیت زیر از گزارش اجراهای واقعی می‌آید، نه از فرض. شکست یک منبع
+      بقیه را متوقف نمی‌کند و علتش همین‌جا ثبت می‌شود.
+    </p>
+  </div>
+  <form method="post" action="/collect">
+    <input type="hidden" name="next" value="/sources">
+    <button class="btn btn-primary" type="submit">اجرای همهٔ منابع</button>
+  </form>
+</section>
+
+<div class="source-grid">
+  {% for s in sources %}
+    <article class="card source-card {{ 'is-ok' if s.ok else ('is-err' if s.has_run else 'is-idle') }}">
+      <div class="source-head">
+        <div>
+          <h2>{{ s.label }}</h2>
+          <span class="muted">{{ s.kind|upper }} · کلید <code>{{ s.key }}</code></span>
+        </div>
+        <span class="state">
+          {% if not s.has_run %}<span class="dot dot-idle"></span> اجرا نشده
+          {% elif s.ok %}<span class="dot dot-ok"></span> سالم
+          {% else %}<span class="dot dot-err"></span> خطا{% endif %}
+        </span>
+      </div>
+
+      <dl class="facts">
+        <div><dt>آگهی در پایگاه داده</dt><dd>{{ s.stored_jobs|fa }}</dd></div>
+        <div><dt>واکشی در آخرین اجرا</dt><dd>{{ s.last_jobs|fa }}</dd></div>
+        <div><dt>نرخ موفقیت (۲۰ اجرای آخر)</dt>
+             <dd>{{ (s.success_rate * 100)|round(0)|int|fa }}٪</dd></div>
+        <div><dt>مدت آخرین اجرا</dt><dd>{{ s.duration_ms|fa }} میلی‌ثانیه</dd></div>
+        <div><dt>آخرین اجرا</dt><dd>{{ s.last_run_ts|timeago if s.last_run_ts else '—' }}</dd></div>
+        <div><dt>آخرین موفقیت</dt><dd>{{ s.last_success_ts|timeago if s.last_success_ts else '—' }}</dd></div>
+      </dl>
+
+      {% if s.error %}
+        <p class="source-error"><b>علت خطای آخر:</b> {{ s.error }}</p>
+      {% endif %}
+
+      {% set runs = history.get(s.key, []) %}
+      {% if runs %}
+        <details>
+          <summary>تاریخچهٔ آخرین {{ runs|length|fa }} اجرا</summary>
+          <table class="table table-compact">
+            <thead><tr><th>زمان</th><th>وضعیت</th><th>آگهی</th><th>مدت</th></tr></thead>
+            <tbody>
+              {% for r in runs %}
+                <tr>
+                  <td>{{ r.ts|timeago }}</td>
+                  <td>{{ 'موفق' if r.ok else 'ناموفق' }}</td>
+                  <td>{{ r.jobs|fa }}</td>
+                  <td>{{ r.duration_ms|fa }} میلی‌ثانیه</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </details>
+      {% endif %}
+    </article>
+  {% endfor %}
+</div>
+
+<section class="card">
+  <div class="card-head"><h2>چگونه منبع تازه اضافه می‌شود؟</h2></div>
+  <p class="description">
+    این سامانه روی معماری کانکتور بنا شده است: برای هر منبع یک آداپتور مستقل
+    نوشته می‌شود که قرارداد <code>SourceConnector</code> را پیاده می‌کند، و
+    فقط با افزودن آن به فهرست منابع، خط لوله، گزارش سلامت و داشبورد آن را
+    به‌طور خودکار می‌شناسند. برای منابع RSS دلخواه هم نیازی به کد نیست:
+    نشانی فید را در متغیر <code>JOB_FEED_URLS</code> بگذارید.
+  </p>
+  <p class="description">
+    منابع فعلی همه فید RSS یا API عمومی و مستند خود سازمان‌ها هستند؛ هیچ
+    صفحهٔ HTML اسکرپ نمی‌شود و هیچ هدر جعلی مرورگر فرستاده نمی‌شود.
+  </p>
+</section>
+
+{% if errors %}
+<section class="card">
+  <div class="card-head"><h2>آخرین خطاهای ثبت‌شده</h2></div>
+  <ul class="timeline">
+    {% for e in errors %}
+      <li class="tl-{{ e.level }}">
+        <span class="tl-dot"></span>
+        <div><p>{{ e.message }}</p><small>{{ e.ts|timeago }}</small></div>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endblock %}

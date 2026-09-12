@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}نمای کلی — کارینو{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>نمای کلی بازار کار</h1>
+    <p class="lede">{{ headline }}</p>
+  </div>
+</section>
+
+{% if not data.health_ok %}
+  {{ empty_state(
+      "هنوز داده‌ای ثبت نشده",
+      "خط لوله آماده است ولی هیچ آگهی‌ای در پایگاه داده نیست. یک دور جمع‌آوری اجرا کنید تا منابع عمومی خوانده شوند.",
+      "/collect", "اجرای نخستین جمع‌آوری") }}
+{% else %}
+
+<div class="kpis">
+  <article class="kpi">
+    <span class="kpi-label">کل آگهی‌ها</span>
+    <b class="kpi-value">{{ data.total_jobs|fa }}</b>
+    <span class="kpi-sub">{{ data.by_source|length|fa }} منبع فعال</span>
+  </article>
+  <article class="kpi">
+    <span class="kpi-label">تازه در ۲۴ ساعت</span>
+    <b class="kpi-value">{{ data.new_today|fa }}</b>
+    <span class="kpi-sub">{{ data.new_week|fa }} در هفتهٔ گذشته</span>
+  </article>
+  <article class="kpi">
+    <span class="kpi-label">میانگین امتیاز تطابق</span>
+    <b class="kpi-value">{{ data.average_score|fa }}</b>
+    <span class="kpi-sub">از ۱۰۰</span>
+  </article>
+  <article class="kpi kpi-accent">
+    <span class="kpi-label">تطابق قوی</span>
+    <b class="kpi-value">{{ data.strong_matches|fa }}</b>
+    <span class="kpi-sub">امتیاز {{ data.top_threshold|fa }} و بالاتر</span>
+  </article>
+  <article class="kpi">
+    <span class="kpi-label">ذخیره‌شده</span>
+    <b class="kpi-value">{{ data.saved_count|fa }}</b>
+    <span class="kpi-sub">{{ data.proposal_count|fa }} پیشنهاد ساخته‌شده</span>
+  </article>
+</div>
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-head">
+      <h2>توزیع امتیاز تطابق</h2>
+      <span class="hint">بر پایهٔ {{ data.total_jobs|fa }} آگهی امتیازدهی‌شده</span>
+    </div>
+    <ul class="bars">
+      {% for band, count in data.distribution.items() %}
+        <li class="bar-row">
+          <span class="bar-label">{{ band }}</span>
+          <span class="bar-track">
+            <span class="bar-fill band-{{ score_band(band.split('-')[-1]|int) }}"
+                  style="width: {{ (count / max_bucket * 100)|round(1) }}%"></span>
+          </span>
+          <b class="bar-value">{{ count|fa }}</b>
+        </li>
+      {% endfor %}
+    </ul>
+    <p class="card-foot">
+      آستانه‌ها: زیر ۵۵ ضعیف · ۵۵ تا ۷۱ متوسط · ۷۲ تا ۸۴ قوی · ۸۵ و بالاتر عالی
+    </p>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>سلامت منابع داده</h2>
+      <a class="link" href="/sources">جزئیات منابع ›</a>
+    </div>
+    <table class="table table-compact">
+      <thead>
+        <tr><th>منبع</th><th>وضعیت</th><th>آگهی</th><th>آخرین اجرا</th></tr>
+      </thead>
+      <tbody>
+        {% for s in data.sources %}
+          <tr>
+            <td>{{ s.label }}</td>
+            <td>
+              {% if not s.has_run %}<span class="dot dot-idle"></span> اجرا نشده
+              {% elif s.ok %}<span class="dot dot-ok"></span> سالم
+              {% else %}<span class="dot dot-err"></span> خطا{% endif %}
+            </td>
+            <td>{{ s.stored_jobs|fa }}</td>
+            <td>{{ s.last_run_ts|timeago if s.last_run_ts else '—' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</div>
+
+<section class="card">
+  <div class="card-head">
+    <h2>بالاترین تطابق‌ها</h2>
+    <span class="hint">
+      مرتب‌شده بر اساس امتیاز ·
+      <a class="link" href="/jobs?min={{ data.top_threshold }}">فقط تطابق قوی ({{ data.top_threshold|fa }}+) ›</a>
+    </span>
+  </div>
+  {% if data.top_matches %}
+    <div class="job-grid">
+      {% for j in data.top_matches %}
+        <a class="job-card" href="/jobs/{{ j.id }}">
+          <div class="job-card-head">
+            {{ score_pill(j.score, j.verdict) }}
+            <div class="job-card-title">
+              <h3>{{ j.title }}</h3>
+              <span class="muted">{{ j.company or 'کارفرما نامشخص' }}</span>
+            </div>
+          </div>
+          <div class="tag-row">
+            {% for name in j.matched_fa %}<span class="tag tag-match">{{ name }}</span>{% endfor %}
+          </div>
+          <div class="job-card-foot">
+            {{ source_badge(j.source) }}
+            <span class="muted">{{ j.published_ts|timeago }}</span>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">هنوز آگهی امتیازدهی‌شده‌ای برای نمایش وجود ندارد.</p>
+  {% endif %}
+  {% if data.top_matches and data.strong_matches == 0 %}
+    <p class="card-foot">
+      هیچ آگهی‌ای به آستانهٔ «تطابق قوی» ({{ data.top_threshold|fa }}) نرسیده است —
+      این طبیعی است: بیشتر آگهی‌های منابع عمومی تخصصی نیستند.
+    </p>
+  {% endif %}
+</section>
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-head">
+      <h2>آگهی به تفکیک منبع</h2>
+    </div>
+    <table class="table table-compact">
+      <thead><tr><th>منبع</th><th>آگهی</th><th>دورکاری</th></tr></thead>
+      <tbody>
+        {% for row in data.by_source %}
+          <tr>
+            <td>{{ source_badge(row.source) }}</td>
+            <td>{{ row.jobs|fa }}</td>
+            <td>{{ row.remote|fa }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>آخرین فعالیت‌ها</h2>
+      <a class="link" href="/activity">همه ›</a>
+    </div>
+    <ul class="timeline">
+      {% for e in data.activity %}
+        <li class="tl-{{ e.level }}">
+          <span class="tl-dot"></span>
+          <div>
+            <p>{{ e.message }}</p>
+            <small>{{ e.ts|timeago }}</small>
+          </div>
+        </li>
+      {% else %}
+        <li class="muted">فعالیتی ثبت نشده است.</li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+
+{% endif %}
+{% endblock %}

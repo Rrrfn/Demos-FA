@@ -1,0 +1,67 @@
+# Render Blueprint — کارینو (Web Service)
+#
+# rootDir الزامی است: این پروژه داخل یک مخزن چندپروژه‌ای قرار دارد و باید از
+# همین پوشه بیلد و اجرا شود؛ در غیر این صورت Render از ریشهٔ مخزن بیلد می‌کند،
+# requirements.txt را پیدا نمی‌کند و دپلوی شکست می‌خورد.
+#
+# «یک worker» عامدانه انتخاب شده است، نه یک محدودیت:
+#
+#   * خط لولهٔ جمع‌آوری و زمان‌بند پس‌زمینه داخل خود پروسهٔ وب زندگی می‌کنند.
+#     با چند worker، هر worker زمان‌بند خودش را می‌سازد و منابع بیرونی چند
+#     بار در دقیقه واکشی می‌شوند. (قید یکتایی پایگاه داده جلوی رکورد تکراری
+#     را می‌گیرد، ولی این هنوز کار بیهوده و ناخواسته است.)
+#   * هم‌روندی از راه threadها می‌آید؛ برای بار سبک این دمو کافی است.
+#
+# اگر لازم شد بیش از یک worker اجرا شود، ENABLE_SCHEDULER=0 را تنظیم کنید
+# تا هر worker زمان‌بند خودش را نسازد.
+services:
+  - type: web
+    name: karino-ai-agent
+    runtime: python
+    plan: free
+    region: frankfurt
+    rootDir: 07-karino-ai-agent
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn karino.webapp:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120
+    healthCheckPath: /health
+    envVars:
+      # نسخهٔ Python باید کامل و منتشرشده باشد (major.minor.patch)
+      - key: PYTHON_VERSION
+        value: "3.10.20"
+      # محیط اجرا — در رابط به‌شکل فارسی («تولید») نمایش داده می‌شود
+      - key: KARINO_ENV
+        value: production
+      # یک دور جمع‌آوری در راه‌اندازی تا سرویس خالی بالا نیاید، و سپس هر ۶ ساعت
+      - key: KARINO_COLLECT_ON_BOOT
+        value: "1"
+      - key: FETCH_INTERVAL_MIN
+        value: "360"
+      # دادهٔ نمونه هرگز ساخته نمی‌شود؛ فهرست خالی صادقانه خالی می‌ماند
+      - key: KARINO_SEED_DEMO
+        value: "0"
+      # اختیاری: هر سه را خالی بگذارید تا پیشنهادنویس در حالت قاعده‌محور بماند.
+      # اگر تنظیم شوند، متن پیشنهاد با مدل زبانی روان‌تر می‌شود و در صورت خطا
+      # بی‌صدا به همان پیش‌نویس قاعده‌محور برمی‌گردد.
+      - key: KARINO_LLM_URL
+        sync: false
+      - key: KARINO_LLM_KEY
+        sync: false
+      # اختیاری: با تنظیم این توکن، endpointهای نوشتن API هدر X-Admin-Token
+      # می‌خواهند. رابط داشبورد از مسیرهای صفحه استفاده می‌کند و بدون توکن هم
+      # کار می‌کند، پس دمو با یک کلیک قابل استفاده می‌ماند.
+      - key: KARINO_ADMIN_TOKEN
+        sync: false
+
+    # پایداری داده — نیازمند پلن پرداختی
+    # دیسک پلن رایگان به سرویس وصل نمی‌شود، پس data/karino.db با هر دپلوی از
+    # نو ساخته می‌شود و تاریخچهٔ قیمت/امتیاز و هشدارها از بین می‌رود. برای
+    # نگه‌داشتن داده، سرویس را ارتقا دهید، دیسک را سوار کنید و مسیر را عوض کنید:
+    #
+    # disk:
+    #   name: karino-data
+    #   mountPath: /var/data
+    #   sizeGB: 1
+    #
+    # و در envVars:
+    #   - key: KARINO_DATA_DIR
+    #     value: /var/data

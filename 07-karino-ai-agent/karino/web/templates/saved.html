@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}ذخیره‌شده — کارینو{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>فهرست ذخیره‌شده</h1>
+    <p class="lede">
+      {{ total|fa }} آگهی که خودتان انتخاب کرده‌اید — مستقل از امتیاز الگوریتم.
+      این فهرست با سقف ظرفیت پایگاه داده پاک نمی‌شود.
+    </p>
+  </div>
+</section>
+
+{% if jobs %}
+  <div class="job-list">
+    {% for j in jobs %}
+      <article class="job-row">
+        <a class="job-row-score" href="/jobs/{{ j.id }}">{{ score_pill(j.score, j.verdict) }}</a>
+
+        <div class="job-row-main">
+          <h3><a href="/jobs/{{ j.id }}">{{ j.title }}</a></h3>
+          <div class="job-row-meta">
+            {% if j.company %}<span>{{ j.company }}</span>{% endif %}
+            {{ source_badge(j.source) }}
+            {% if j.remote %}<span class="tag tag-soft">دورکاری</span>{% endif %}
+            <span class="muted">{{ j.published_ts|timeago }}</span>
+            {% if j.has_proposal %}<span class="tag tag-soft">پیشنهاد آماده</span>{% endif %}
+          </div>
+        </div>
+
+        <div class="job-row-actions">
+          <a class="btn btn-ghost btn-sm" href="/jobs/{{ j.id }}">تحلیل تطابق</a>
+          <form method="post" action="/saved/{{ j.id }}/toggle">
+            <input type="hidden" name="next" value="/saved">
+            <button class="btn btn-ghost btn-sm" type="submit">برداشتن</button>
+          </form>
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+{% else %}
+  {{ empty_state(
+      "فهرست ذخیره‌شده خالی است",
+      "در صفحهٔ هر آگهی، دکمهٔ «افزودن به ذخیره‌شده» را بزنید تا اینجا جمع شوند.") }}
+{% endif %}
+{% endblock %}

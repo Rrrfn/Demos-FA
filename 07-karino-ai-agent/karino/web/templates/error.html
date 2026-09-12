@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}خطا — کارینو{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>درخواست انجام نشد</h1>
+    <p class="lede">سامانه خطا را کنترل‌شده برگرداند و جزئیات فنی را هم نشان می‌دهد.</p>
+  </div>
+</section>
+
+<section class="card error-card">
+  <dl class="facts facts-lg">
+    <div><dt>کد خطا</dt><dd><code>{{ error.code }}</code></dd></div>
+    <div><dt>پیام</dt><dd>{{ error.message }}</dd></div>
+    {% if error.detail %}
+      <div><dt>جزئیات</dt><dd><code>{{ error.detail }}</code></dd></div>
+    {% endif %}
+  </dl>
+  <div class="detail-actions">
+    <a class="btn btn-primary" href="/">بازگشت به نمای کلی</a>
+    <a class="btn btn-ghost" href="/jobs">فهرست آگهی‌ها</a>
+  </div>
+</section>
+{% endblock %}

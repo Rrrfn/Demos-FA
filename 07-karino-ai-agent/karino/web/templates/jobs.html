@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}آگهی‌ها — کارینو{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>آگهی‌های شغلی</h1>
+    <p class="lede">
+      {{ total|fa }} آگهی
+      {% if args.q %} برای «{{ args.q }}»{% endif %}
+      {% if args.min_score %} با امتیاز {{ args.min_score|fa }} و بالاتر{% endif %}
+    </p>
+  </div>
+</section>
+
+<form class="filters" method="get" action="/jobs">
+  <div class="filter-field">
+    <label for="f-q">جست‌وجو</label>
+    <input id="f-q" type="search" name="q" value="{{ args.q }}" placeholder="عنوان، کارفرما، شرح">
+  </div>
+
+  <div class="filter-field">
+    <label for="f-source">منبع</label>
+    <select id="f-source" name="source">
+      <option value="">همهٔ منابع</option>
+      {% for s in source_labels %}
+        <option value="{{ s.key }}" {{ 'selected' if args.source == s.key }}>{{ s.label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="filter-field">
+    <label for="f-min">کمینهٔ امتیاز</label>
+    <input id="f-min" type="number" name="min" min="0" max="100" step="5" value="{{ args.min_score }}">
+  </div>
+
+  <div class="filter-field">
+    <label for="f-remote">نوع محل</label>
+    <select id="f-remote" name="remote">
+      <option value="" {{ 'selected' if args.remote is none }}>همه</option>
+      <option value="1" {{ 'selected' if args.remote is true }}>دورکاری</option>
+      <option value="0" {{ 'selected' if args.remote is false }}>حضوری / نامشخص</option>
+    </select>
+  </div>
+
+  <div class="filter-field">
+    <label for="f-sort">ترتیب</label>
+    <select id="f-sort" name="sort">
+      {% for key, label in sort_labels.items() %}
+        <option value="{{ key }}" {{ 'selected' if args.sort == key }}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="filter-actions">
+    <button class="btn btn-primary" type="submit">اعمال فیلتر</button>
+    <a class="btn btn-ghost" href="/jobs">پاک‌کردن</a>
+  </div>
+</form>
+
+<div class="preset-row">
+  {% for key, value, label in presets %}
+    <a class="chip {{ 'is-active' if args.min_score == value }}"
+       href="/jobs?min={{ value }}{% if args.q %}&q={{ args.q|urlencode }}{% endif %}">{{ label }}</a>
+  {% endfor %}
+  <span class="preset-hint">{{ args.per_page|fa }} مورد در هر صفحه</span>
+</div>
+
+{% if jobs %}
+  <div class="job-list">
+    {% for j in jobs %}
+      <article class="job-row">
+        <a class="job-row-score" href="/jobs/{{ j.id }}">
+          {{ score_pill(j.score, j.verdict) }}
+        </a>
+
+        <div class="job-row-main">
+          <h3><a href="/jobs/{{ j.id }}">{{ j.title }}</a></h3>
+          <div class="job-row-meta">
+            {% if j.company %}<span>{{ j.company }}</span>{% endif %}
+            {{ source_badge(j.source) }}
+            {% if j.remote %}<span class="tag tag-soft">دورکاری</span>{% endif %}
+            {% if j.location %}<span class="muted">{{ j.location }}</span>{% endif %}
+            <span class="muted">{{ j.published_ts|timeago }}</span>
+            {% if j.seen_count > 1 %}<span class="muted">دیده‌شده در {{ j.seen_count|fa }} دور</span>{% endif %}
+          </div>
+
+          {% if j.factors %}
+            <ul class="mini-factors">
+              {% for f in j.factors[:4] %}
+                <li>
+                  <span class="mf-label">{{ f.label }}</span>
+                  <span class="mf-track"><span class="mf-fill" style="width: {{ f.percent }}%"></span></span>
+                  <b>{{ f.points|fa }}</b>
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+
+        <div class="job-row-actions">
+          {% if j.saved %}<span class="tag tag-saved">⚑ ذخیره‌شده</span>{% endif %}
+          {% if j.has_proposal %}<span class="tag tag-soft">پیشنهاد آماده</span>{% endif %}
+          <a class="btn btn-ghost btn-sm" href="/jobs/{{ j.id }}">تحلیل تطابق</a>
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+
+  {% if page_count > 1 %}
+    <nav class="pager" aria-label="صفحه‌بندی">
+      {% if args.page > 1 %}
+        <a class="btn btn-ghost" href="/jobs?{{ query_string }}&page={{ args.page - 1 }}">صفحهٔ قبل</a>
+      {% endif %}
+      <span class="pager-info">صفحهٔ {{ args.page|fa }} از {{ page_count|fa }}</span>
+      {% if args.page < page_count %}
+        <a class="btn btn-ghost" href="/jobs?{{ query_string }}&page={{ args.page + 1 }}">صفحهٔ بعد</a>
+      {% endif %}
+    </nav>
+  {% endif %}
+
+{% else %}
+  {% if args.min_score > 0 %}
+    {{ empty_state(
+        "هیچ آگهی‌ای به آستانهٔ " ~ args.min_score|fa ~ " نرسیده",
+        "این آستانه نسبتاً سخت‌گیرانه است و بیشتر آگهی‌های منابع عمومی تخصصی نیستند. آستانه را پایین‌تر بیاورید تا رتبه‌بندی کامل را ببینید.",
+        "/jobs?sort=score", "نمایش همه به‌ترتیب امتیاز", method='get') }}
+  {% else %}
+    {{ empty_state(
+        "آگهی‌ای با این فیلترها پیدا نشد",
+        "فیلترها را ساده‌تر کنید یا یک دور جمع‌آوری تازه اجرا کنید تا منابع عمومی خوانده شوند.",
+        "/collect", "جمع‌آوری تازه") }}
+  {% endif %}
+{% endif %}
+{% endblock %}

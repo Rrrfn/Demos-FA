@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}پروفایل و نمونه‌کار — کارینو{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>پروفایل تخصصی و سبد نمونه‌کار</h1>
+    <p class="lede">
+      این پروفایل تنها منبع حقیقت است: موتور امتیازدهی و نویسندهٔ پیشنهاد هر دو
+      از همین داده تغذیه می‌شوند، پس هر توضیحی که کاربر می‌بیند به مدرک واقعی
+      وصل است.
+    </p>
+  </div>
+</section>
+
+<div class="kpis kpis-sm">
+  <article class="kpi"><span class="kpi-label">مهارت ثبت‌شده</span><b class="kpi-value">{{ categories|map(attribute=1)|map('length')|sum|fa }}</b></article>
+  <article class="kpi"><span class="kpi-label">وزن کل پروفایل</span><b class="kpi-value">{{ total_weight|fa }}</b></article>
+  <article class="kpi"><span class="kpi-label">نمونه‌کار</span><b class="kpi-value">{{ portfolio|length|fa }}</b></article>
+  <article class="kpi"><span class="kpi-label">آستانهٔ پیشنهاد ویژه</span><b class="kpi-value">{{ prefs.top_threshold|fa }}</b></article>
+</div>
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-head"><h2>مهارت‌ها به تفکیک دسته</h2></div>
+    <div class="skill-groups">
+      {% for label, specs in categories %}
+        <div class="skill-group">
+          <h3>{{ label }}</h3>
+          <ul>
+            {% for s in specs|sort(attribute='weight', reverse=true) %}
+              <li>
+                <b>{{ s.fa }}</b>
+                <span class="weight-track"><span class="weight-fill" style="width: {{ (s.weight / 10 * 100)|round(0) }}%"></span></span>
+                <span class="weight-value">{{ s.weight|fa }}/۱۰</span>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>ترجیحات کاری</h2></div>
+    <dl class="facts facts-lg">
+      <div><dt>سطح هدف</dt><dd>{{ prefs.seniority }}</dd></div>
+      <div><dt>نوع همکاری مطلوب</dt><dd>{{ prefs.preferred|join('، ') }}</dd></div>
+      <div><dt>نامطلوب</dt><dd>{{ prefs.disliked|join('، ') if prefs.disliked else '—' }}</dd></div>
+      <div><dt>دورکاری</dt><dd>{{ 'ترجیح دارد' if prefs.remote else 'بی‌اهمیت' }}</dd></div>
+      <div><dt>محدودهٔ مطلوب</dt><dd>{{ prefs.locations|join('، ') }}</dd></div>
+    </dl>
+    <p class="card-foot">
+      همین ترجیحات در عامل‌های «سطح ارشدیت»، «نوع همکاری»، «دورکاری» و «محل کار»
+      موتور امتیازدهی اثر می‌گذارند.
+    </p>
+  </section>
+</div>
+
+<section class="card">
+  <div class="card-head">
+    <h2>سبد نمونه‌کار</h2>
+    <span class="hint">هر پروژه فقط به مهارت‌هایی وصل است که واقعاً در آن هست</span>
+  </div>
+  <div class="project-grid">
+    {% for p in portfolio %}
+      <article class="project-card">
+        <h3>{{ p.title }}</h3>
+        <p>{{ p.summary }}</p>
+        {% if p.metric %}<span class="tag tag-soft">{{ p.metric }}</span>{% endif %}
+        <div class="tag-row">
+          {% for s in p.stack %}<span class="tag tag-evidence">{{ s }}</span>{% endfor %}
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
