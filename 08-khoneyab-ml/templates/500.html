@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}خطای سرویس | خانه‌یاب{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <section class="pagehead">
+    <span class="eyebrow">خطای ۵۰۰</span>
+    <h1>محاسبهٔ این صفحه کامل نشد</h1>
+    <p class="lead">خطا در سرویس ثبت شد. صفحهٔ خانه و جست‌وجو مستقل از این خطا
+      کار می‌کنند؛ از همان‌جا ادامه دهید.</p>
+  </section>
+
+  <section>
+    <div class="empty">
+      <strong>ادامه از جای دیگر</strong>
+      <p class="btn-row mt-2" style="justify-content:center">
+        <a class="btn" href="/">صفحهٔ خانه</a>
+        <a class="btn btn-ghost" href="/search">جست‌وجوی ملک</a>
+      </p>
+    </div>
+  </section>
+</div>
+{% endblock %}

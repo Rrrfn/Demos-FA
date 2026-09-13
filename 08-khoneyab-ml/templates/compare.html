@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block title %}مقایسهٔ ملک‌ها | خانه‌یاب{% endblock %}
+
+{% block content %}
+<div class="wrap">
+
+  <header class="pagehead">
+    <span class="eyebrow">مقایسهٔ ملک</span>
+    <h1>چند ملک را کنار هم بگذارید</h1>
+    <p class="lead">تا {{ max_compare | digits }} ملک. مقایسه سه چیز را روشن می‌کند:
+      قیمت خواسته‌شده، ارزش برآوردی مدل، و امکاناتی که تفاوت را می‌سازند.</p>
+  </header>
+
+  {% if not items %}
+  <section>
+    <div class="empty">
+      <strong>هنوز ملکی به فهرست مقایسه اضافه نشده</strong>
+      <p>در صفحهٔ جست‌وجو یا صفحهٔ هر ملک، دکمهٔ «مقایسه» را بزنید.</p>
+      <p class="mt-2"><a class="btn" href="/search">رفتن به جست‌وجو</a></p>
+    </div>
+  </section>
+  {% else %}
+
+  <section>
+    <div class="grid grid-3">
+      {% for card in cards %}{{ ui.listing_card(card) }}{% endfor %}
+    </div>
+  </section>
+
+  <section>
+    {{ ui.section_head('جدول', 'مشخصات در برابر هم') }}
+    <div class="tablewrap">
+      <table class="cmp-table">
+        <thead>
+          <tr>
+            <th scope="col">ویژگی</th>
+            {% for header in headers %}<th scope="col">{{ header | fa_code }}</th>{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for label, cells in table %}
+          <tr>
+            <th scope="row">{{ label }}</th>
+            {% for cell in cells %}<td class="num">{{ cell }}</td>{% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    {{ ui.section_head('نمودار', 'قیمت هر متر و ارزش برآوردی') }}
+    <div class="split">
+      <div>{{ ui.chart_block(charts.meters, 'قیمت هر مترمربع هر ملک، به میلیون تومان.') }}</div>
+      <div>{{ ui.chart_block(charts.grouped, 'قیمت آگهی در برابر ارزش برآوردی مدل، به میلیارد تومان.') }}</div>
+    </div>
+    <p class="muted mt-2">ارزان‌ترین متر در این فهرست <strong>{{ cheapest.id | fa_code }}</strong> با
+      {{ (cheapest.price_per_m2 / 1e6) | fa }} میلیون و گران‌ترین
+      <strong>{{ dearest.id | fa_code }}</strong> با {{ (dearest.price_per_m2 / 1e6) | fa }} میلیون
+      تومان است — اختلاف
+      {{ ((dearest.price_per_m2 / cheapest.price_per_m2) - 1) | fa_percent }}.
+      بخشی از این اختلاف با منطقه توضیح داده می‌شود و بخشی با مشخصات خود ملک.</p>
+  </section>
+
+  <section>
+    {{ ui.section_head('اشتراک‌گذاری', 'این مقایسه را برای همکار بفرستید') }}
+    <div class="share">
+      <code id="share-url">{{ share_url }}</code>
+      <button class="btn btn-sm" type="button" data-copy="#share-url">رونوشت</button>
+      <a class="btn btn-sm btn-ghost" href="{{ share_url }}">بازکردن</a>
+    </div>
+    <p class="muted mt-1">نشانی، خودِ فهرست را در بر دارد؛ هر کس بازش کند همین مقایسه را می‌بیند.</p>
+  </section>
+
+  <section>
+    {{ ui.section_head('مدیریت فهرست') }}
+    <div class="btn-row">
+      {% for item in items %}
+      <form method="post" action="/compare/toggle/{{ item.id }}" data-toggle="compare">
+        <input type="hidden" name="next" value="/compare">
+        <button class="btn btn-ghost btn-sm" type="submit" data-id="{{ item.id }}">
+          حذف {{ item.id | fa_code }}
+        </button>
+      </form>
+      {% endfor %}
+      <form method="post" action="/compare/clear">
+        <input type="hidden" name="next" value="/compare">
+        <button class="btn btn-sm btn-ghost" type="submit">پاک‌کردن کل فهرست</button>
+      </form>
+    </div>
+  </section>
+
+  {% endif %}
+
+  <section>{{ ui.disclaimer() }}</section>
+</div>
+{% endblock %}

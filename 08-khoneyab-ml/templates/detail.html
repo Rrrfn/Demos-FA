@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block title %}{{ item.title }} — {{ card.price }} تومان | خانه‌یاب{% endblock %}
+{% block description %}مشخصات کامل، ارزش برآوردی مدل و دلیل آن برای {{ item.title }} در {{ item.district_label }}.{% endblock %}
+
+{% block content %}
+<div class="wrap">
+
+  <nav class="pagehead" aria-label="مسیر">
+    <ul class="crumbs">
+      <li><a href="/">خانه</a></li>
+      <li aria-hidden="true">/</li>
+      <li><a href="/search">جست‌وجو</a></li>
+      <li aria-hidden="true">/</li>
+      <li><a href="/search?districts={{ item.district }}">{{ item.district_label }}</a></li>
+      <li aria-hidden="true">/</li>
+      <li aria-current="page">{{ item.id | fa_code }}</li>
+    </ul>
+    <span class="eyebrow">کد آگهی {{ item.id | fa_code }}</span>
+    <h1>{{ item.title }}</h1>
+    <div class="badges mt-1">
+      <span class="badge badge-ink">{{ item.property_type }}</span>
+      <span class="badge">{{ item.district_label }}</span>
+      <span class="badge">{{ item.floor_label }}</span>
+      <span class="badge">{{ item.bedrooms_label }}</span>
+      {% if item.is_luxury %}<span class="badge badge-bronze">ملک لوکس</span>{% endif %}
+    </div>
+  </nav>
+
+  <section aria-label="گالری تصاویر">
+    {% if gallery.main %}
+    <div class="gallery">
+      <div class="gallery-main">{{ ui.picture(gallery.main, item.title,eager=true) }}</div>
+      {% for side in gallery.sides %}
+      <div class="gallery-side">{{ ui.picture(side, item.title ~ ' — نمای داخلی') }}</div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="notice">برای این آگهی عکسی در دسترس نیست.</p>
+    {% endif %}
+  </section>
+
+  <section class="split mt-3">
+    <div>
+      <div class="pricebox">
+        <span class="kpi-label">قیمت آگهی</span>
+        <div class="price-value">{{ item.price | fa }} <span class="price-unit">تومان</span></div>
+        <p class="price-sub">{{ item.price_per_m2 | fa }} تومان در هر مترمربع ·
+          {{ item.days_ago | fa }} روز پیش منتشر شده</p>
+
+        <div class="band">
+          <div class="band-row">
+            <span>ارزش برآوردی مدل</span>
+            <strong>{{ estimate.price | fa }} تومان</strong>
+          </div>
+          <div class="band-row">
+            <span>بازهٔ ۸۰ درصدی</span>
+            <strong>{{ estimate.low_short }} تا {{ estimate.high_short }}</strong>
+          </div>
+          <div class="band-bar" aria-hidden="true">
+            <i></i><b style="inset-inline-start: {{ [4, [96, (item.price / estimate.price * 44 + 50)] | min] | max }}%"></b>
+          </div>
+          <p class="muted mb-0">قیمت آگهی روی همین نوار نشان داده شده است؛ فاصلهٔ آن از
+            مرکز، اختلاف با برآورد مدل است.</p>
+        </div>
+
+        {% if gap | abs <= 0.05 %}
+          <p class="notice notice-ok mt-2 mb-0">قیمت آگهی با برآورد مدل هم‌خوان است
+            (اختلاف زیر ۵٪).</p>
+        {% elif gap > 0 %}
+          <p class="notice notice-warn mt-2 mb-0">قیمت آگهی
+            <strong>{{ (gap | abs) | fa_percent }}</strong> بالاتر از برآورد مدل است.</p>
+        {% else %}
+          <p class="notice notice-info mt-2 mb-0">قیمت آگهی
+            <strong>{{ (gap | abs) | fa_percent }}</strong> پایین‌تر از برآورد مدل است.</p>
+        {% endif %}
+      </div>
+
+      <div class="btn-row mt-2">
+        <form method="post" action="/compare/toggle/{{ item.id }}" data-toggle="compare">
+          <input type="hidden" name="next" value="/listing/{{ item.id }}">
+          <button class="btn{% if card.comparing %} is-on-row{% endif %}" type="submit"
+                  data-id="{{ item.id }}">
+            {{ 'حذف از مقایسه' if card.comparing else 'افزودن به مقایسه' }}
+          </button>
+        </form>
+        <form method="post" action="/saved/toggle/{{ item.id }}" data-toggle="saved">
+          <input type="hidden" name="next" value="/listing/{{ item.id }}">
+          <button class="btn btn-ghost" type="submit" data-id="{{ item.id }}">
+            {{ 'برداشتن نشان' if card.saved else 'نشان‌کردن' }}
+          </button>
+        </form>
+        <a class="btn btn-ghost" href="/estimate?f=1&district={{ item.district }}&area={{ item.area }}&bedrooms={{ item.bedrooms }}&age={{ item.age }}&floor={{ item.floor }}&parking={{ item.parking }}&storage={{ item.storage }}&elevator={{ item.elevator }}">برآورد با همین مشخصات</a>
+      </div>
+
+      <p class="lead mt-2">{{ item.description }}</p>
+    </div>
+
+    <div>
+      <h2 class="mb-1">مشخصات</h2>
+      <table class="specs">
+        <tbody>
+          {% for label, value in specs %}
+          <tr><td>{{ label }}</td><td>{{ value }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    {{ ui.section_head('توضیح‌پذیری', 'چرا این عدد؟',
+        'سهم هر ویژگی در تفاوت این ملک با یک ملک مرجع با میانهٔ مشخصات شهر.') }}
+    <p class="lead mb-2">{{ estimate.summary }}</p>
+    <div class="split">
+      <div>
+        {{ ui.factor_bars(estimate.factors) }}
+        <p class="muted mt-2">سهم‌ها میانگین چند ترتیب مختلف برداشتن ویژگی‌هاست؛ به همین
+          دلیل جمعشان با اختلاف قیمت پایه تا این ملک دقیقاً برابر درمی‌آید.
+          {% if estimate.residual %}اختلاف گردکردن: {{ estimate.residual | fa }} تومان.{% endif %}</p>
+      </div>
+      <div>
+        <div class="kpis">
+          {{ ui.kpi('ارزش پایهٔ شهر', estimate.base_short ~ ' تومان', 'ملکی با میانهٔ مشخصات') }}
+          {{ ui.kpi('ارزش این ملک', estimate.price_short ~ ' تومان', 'با مشخصات این آگهی') }}
+          {{ ui.kpi('اثر کل مشخصات', estimate.delta_short ~ ' تومان', 'جمع سهم همهٔ ویژگی‌ها') }}
+          {{ ui.kpi('پهنای بازه', '±' ~ estimate.half_width_pct ~ '٪', 'حول برآورد نقطه‌ای') }}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    {{ ui.section_head('مقایسه با بازار', 'ملک‌های مشابه',
+        'نزدیک‌ترین آگهی‌های همین منطقه از نظر متراژ، سن و تعداد اتاق.') }}
+    {% if comparables %}
+      <div class="grid grid-3">
+        {% for other in comparables %}{{ ui.listing_card(other) }}{% endfor %}
+      </div>
+      <p class="muted mt-2">میانهٔ {{ estimate.comparable_count | fa }} ملک مشابه:
+        {{ (estimate.comparable_median / 1e9) | fa(decimals=2) }} میلیارد تومان
+        ({{ estimate.comparable_median_m2 }} میلیون در مترمربع). برآورد این آگهی
+        {{ estimate.gap_text }} نسبت به آن میانه است.</p>
+    {% else %}
+      <div class="empty"><strong>ملک مشابهی در این منطقه پیدا نشد</strong></div>
+    {% endif %}
+  </section>
+
+  <section>
+    {% if credit %}
+    <p class="notice mb-2">عکس‌ها نمادین‌اند و عکس واقعی این ملک نیستند. منبع:
+      {{ credit.provider }}{% if credit.author %}، پدیدآورندهٔ {{ credit.author }}{% endif %}
+      — مجوز {{ credit.license }}{% if credit.page %} ·
+      <a href="{{ credit.page }}" rel="noopener nofollow" target="_blank">صفحهٔ اصلی عکس</a>{% endif %}.</p>
+    {% endif %}
+    {{ ui.disclaimer() }}
+  </section>
+
+</div>
+{% endblock %}

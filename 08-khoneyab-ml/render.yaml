@@ -1,3 +1,14 @@
+# استقرار خانه‌یاب روی Render.
+#
+# این فایل با «Blueprint» خوانده می‌شود: مخزن را وصل می‌کنید و Render خودش
+# سرویس را از همین تعریف می‌سازد. سه نکته که بدون آن‌ها استقرار به مشکل می‌خورد:
+#
+# ۱) ``rootDir`` — مخزن چند پروژه دارد و برنامه در این پوشه است.
+# ۲) ``buildCommand`` — بستهٔ مدل و نسخه‌های کم‌حجم عکس در زمان ساخت آماده
+#    می‌شوند. اگر این کار انجام نشود، نخستین درخواستِ صفحهٔ ملک باید ۳۰ ثانیه
+#    منتظر آموزش مدل بماند (سیستم خودترمیم است، ولی کند).
+# ۳) ``gunicorn`` — سرور توسعهٔ Flask برای تولید ساخته نشده. تعداد کارگر عمداً
+#    کم است چون هر کارگر یک نسخهٔ کامل از مدل و کاتالوگ را در حافظه نگه می‌دارد.
 services:
   - type: web
     name: khoneyab-ml
@@ -5,8 +16,16 @@ services:
     plan: free
     region: frankfurt
     rootDir: 08-khoneyab-ml
-    buildCommand: pip install -r requirements.txt && python -c "from khoneyab.train import train_all; train_all()"
-    startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true --browser.gatherUsageStats false
+    buildCommand: >-
+      pip install -r requirements.txt &&
+      python -c "from khoneyab.train import train_all; train_all()" &&
+      python -m tools.make_thumbs
+    startCommand: >-
+      gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 4
+      --timeout 120 --access-logfile - --error-logfile - wsgi:app
+    healthCheckPath: /api/health
     envVars:
       - key: PYTHON_VERSION
-        value: "3.10.11"
+        value: "3.13.5"
+      - key: PYTHONUNBUFFERED
+        value: "1"

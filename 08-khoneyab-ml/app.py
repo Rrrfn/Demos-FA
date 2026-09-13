@@ -1,68 +1,34 @@
 # -*- coding: utf-8 -*-
-"""خانه‌یاب — پلتفرم هوش بازار مسکن تهران.
+"""نقطهٔ ورود توسعه.
 
-اجرا:
+    python app.py
 
-    streamlit run app.py
-
-این فایل فقط پوسته است: پیکربندی صفحه، پوستهٔ ظاهری، نوار کنار و اعلام فهرست
-صفحه‌ها. منطق هر صفحه در ``khoneyab/views`` است.
+برای استقرار، ``wsgi.py`` با gunicorn اجرا می‌شود؛ این فایل فقط برای اجرای
+محلی و بازآزمایی خودکار است. سرور توسعهٔ Flask برای بار سنگین ساخته نشده،
+پس اینجا فقط با آن کار می‌کنیم و در تولید از gunicorn استفاده می‌شود.
 """
 from __future__ import annotations
 
-import streamlit as st
+import os
 
-from khoneyab import theme
-from khoneyab.nav import build_pages
-from khoneyab.photos import photo_url
-from khoneyab.runtime import photos
+from khoneyab.web import create_app
 
-BRAND_FA = "خانه‌یاب"
-BRAND_EN = "KHANEYAB"
-TAGLINE = "پلتفرم هوش بازار مسکن تهران"
+app = create_app()
 
 
-def sidebar() -> None:
-    """نوار کنار — نشان برند و یادآوری ماهیت داده."""
-    library = photos()
-    logo = photo_url(library.gallery(2)[0]) if library.total else ""
-    logo_tag = (
-        f'<img src="{logo}" alt="" style="width:100%;height:88px;object-fit:cover;'
-        'border-radius:12px;margin-bottom:.7rem">' if logo else ""
+if __name__ == "__main__":
+    # نسخه‌های کم‌حجم عکس‌ها در راه‌اندازی اول ساخته می‌شوند. این کار عمداً
+    # اینجاست و نه در ``create_app``: خودِ البرنامه نباید به Pillow وابسته باشد
+    # اگر کسی آن را درون یک فرایند دیگر سوار کند.
+    from tools.make_thumbs import ensure_all
+
+    stats = ensure_all()
+    if stats:
+        print(f"نسخه‌های کم‌حجم ساخته شد: {stats}")
+
+    app.run(
+        host=os.environ.get("HOST", "127.0.0.1"),
+        port=int(os.environ.get("PORT", "8520")),
+        debug=os.environ.get("FLASK_DEBUG", "") == "1",
+        use_reloader=False,
     )
-    with st.sidebar:
-        st.markdown(
-            '<div style="padding:.2rem 0 1rem">'
-            f"{logo_tag}"
-            f'<div class="kh-serif" style="letter-spacing:.28em;font-size:.7rem;'
-            f'color:#A8854E">{BRAND_EN}</div>'
-            '<div style="font-weight:900;font-size:1.28rem;color:#12100E;'
-            f'line-height:1.6">{BRAND_FA}</div>'
-            f'<div class="kh-muted" style="font-size:.76rem">{TAGLINE}</div>'
-            '<hr style="border:0;height:1px;background:#E6DED1;margin:.9rem 0">'
-            "</div>",
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            '<div class="kh-muted" style="font-size:.72rem;line-height:1.9">'
-            "داده‌ها سینتتیک‌اند و قیمت واقعی بازار نیستند.</div>",
-            unsafe_allow_html=True,
-        )
-
-
-def main() -> None:
-    st.set_page_config(
-        page_title=f"{BRAND_FA} — {TAGLINE}",
-        page_icon="🏛",
-        layout="wide",
-        # ``auto`` یعنی در عرض‌های باریک نوار کنار بسته شروع می️شود. در Streamlit
-        # نوار کنار در صفحهٔ کوچک روی محتوا می‌نشیند، نه کنارش؛ اگر باز شروع
-        # شود، بخشی از کارت‌ها و محور نمودارها زیرش پنهان می‌ماند.
-        initial_sidebar_state="auto",
-    )
-    theme.inject()
-    sidebar()
-    st.navigation(build_pages(), position="sidebar").run()
-
-
-main()

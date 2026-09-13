@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block title %}تحلیل بازار مسکن تهران | خانه‌یاب{% endblock %}
+{% block description %}میانهٔ قیمت، توزیع، تفکیک منطقه‌ای و معیارهای مدل — همه از تجمیع واقعی کاتالوگ نمونه.{% endblock %}
+
+{% block content %}
+<div class="wrap">
+
+  <header class="pagehead">
+    <span class="eyebrow">تحلیل بازار</span>
+    <h1>تصویر کلی بازار، از دادهٔ همین کاتالوگ</h1>
+    <p class="lead">هر عدد و هر نمودار این صفحه از تجمیع واقعی {{ overview.listings | fa }} آگهی
+      نمونه ساخته شده است؛ هیچ مقدار تزئینی در کار نیست. اگر داده برای بخشی کافی
+      نباشد، همان بخش خالی می‌ماند و پیام می‌دهد.</p>
+  </header>
+
+  <section aria-label="شاخص‌های کلیدی">
+    <div class="kpis">
+      {{ ui.kpi('میانهٔ قیمت ملک', (overview.median_price / 1e9) | fa(decimals=2) ~ ' میلیارد', 'تومان') }}
+      {{ ui.kpi('میانهٔ قیمت متر', (overview.median_price_m2 / 1e6) | fa ~ ' میلیون', 'تومان در مترمربع') }}
+      {{ ui.kpi('میانگین متراژ', overview.mean_area | fa ~ ' متر', 'مترمربع') }}
+      {{ ui.kpi('میانهٔ سن بنا', overview.median_age | fa ~ ' سال', 'در کاتالوگ') }}
+      {{ ui.kpi('سهم املاک لوکس', (overview.luxury_share * 100) | fa(decimals=1) ~ '٪', 'متراژ ۲۰۰ متر و بالاتر') }}
+      {{ ui.kpi('دقت مدل (R²)', insights.r2 | fa(decimals=3), insights.best_model) }}
+    </div>
+  </section>
+
+  <section>
+    {{ ui.section_head('پراکندگی', 'گران‌ترین و ارزان‌ترین مناطق',
+        'میانهٔ قیمت هر مترمربع، به تفکیک منطقهٔ شهرداری.') }}
+    <div class="split">
+      <div>{{ ui.chart_block(expensive_chart) }}</div>
+      <div>{{ ui.chart_block(affordable_chart) }}</div>
+    </div>
+  </section>
+
+  <section>
+    {{ ui.section_head('توزیع', 'قیمت‌ها چطور پخش شده‌اند',
+        'هیستوگرام واقعی کاتالوگ — میله‌ها سطل‌های مساوی‌اند.') }}
+    <div class="split">
+      <div>{{ ui.chart_block(distribution_chart, 'قیمت کل ملک، به میلیارد تومان.') }}</div>
+      <div>{{ ui.chart_block(per_m2_chart, 'قیمت هر مترمربع، به میلیون تومان.') }}</div>
+    </div>
+  </section>
+
+  <section>
+    {{ ui.section_head('رابطه‌ها', 'متراژ و تعداد اتاق چقدر قیمت را جابه‌جا می‌کنند',
+        'میانهٔ قیمت در هر گروه — نه میانگین، که با چند ملک گران کج می‌شود.') }}
+    <div class="split">
+      <div>{{ ui.chart_block(area_chart) }}</div>
+      <div>{{ ui.chart_block(bedrooms_chart) }}</div>
+    </div>
+  </section>
+
+  <section>
+    {{ ui.section_head('جدول مناطق', 'همهٔ ۲۲ منطقه در یک جدول',
+        'قابل مرتب‌سازی نیست چون داده ایستاست؛ اما از اینجا می‌توانید
+         هر منطقه را جداگانه در جست‌وجو باز کنید.') }}
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">منطقه</th>
+            <th scope="col" class="num">آگهی</th>
+            <th scope="col" class="num">میانهٔ قیمت</th>
+            <th scope="col" class="num">میانهٔ قیمت متر</th>
+            <th scope="col" class="num">میانگین سن</th>
+            <th scope="col" class="num">سهم لوکس</th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in table %}
+          <tr>
+            <td>{{ row.district }}</td>
+            <td class="num">{{ row.listings | fa }}</td>
+            <td class="num">{{ (row.median_price / 1e9) | fa(decimals=2) }} م.د</td>
+            <td class="num">{{ (row.median_price_m2 / 1e6) | fa }} م</td>
+            <td class="num">{{ row.median_age | fa(decimals=1) }}</td>
+            <td class="num">{{ (row.luxury_share * 100) | fa(decimals=1) }}٪</td>
+            <td><a href="/search?districts={{ loop.index }}">{{ 'جست‌وجو' }}</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    {{ ui.section_head('مدل', 'چه چیزی قیمت را تعیین می‌کند',
+        'سهم هر ویژگی از اهمیت، با جایگشت روی دادهٔ آزمون اندازه‌گیری شده.') }}
+    <div class="split">
+      <div>{{ ui.chart_block(importance_chart) }}</div>
+      <div>
+        <div class="kpis">
+          {{ ui.kpi('نوع مدل', insights.best_model, 'برندهٔ مقایسه') }}
+          {{ ui.kpi('میانهٔ خطای درصدی', insights.mape_pct | fa(decimals=1) ~ '٪', 'MAPE') }}
+          {{ ui.kpi('خطای مطلق میانه', (insights.mae_toman / 1e9) | fa(decimals=2) ~ ' میلیارد', 'MAE روی آزمون') }}
+          {{ ui.kpi('R² اعتبارسنجی', insights.cv_r2_mean | fa(decimals=3), '±' ~ (insights.cv_r2_std | fa(decimals=3)) ~ ' در ۵ تایی') }}
+        </div>
+        <p class="muted mt-2">منطقه و متراژ با فاصلهٔ زیاد مهم‌ترین‌اند؛ همین است که
+          برآورد بی‌توجه به منطقه را بی‌معنا می‌کند. جزئیات کامل در
+          <a href="/methodology">صفحهٔ متدولوژی</a> آمده است.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>{{ ui.disclaimer() }}</section>
+</div>
+{% endblock %}

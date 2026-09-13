@@ -119,7 +119,9 @@ def test_active_filter_labels(env):
     query = SearchQuery(districts=(1, 2), parking=True, age_max=10,
                         area_min=80, bedrooms=(2, 3))
     labels = query.active_filters()
-    assert "2 منطقه" in labels
+    assert "۲ منطقه" in labels          # رقم فارسی، نه لاتین
+    assert all(not any(character.isascii() and character.isdigit()
+                       for character in label) for label in labels)
     assert "پارکینگ" in labels
     assert "بازهٔ متراژ" in labels
     assert "تعداد اتاق" in labels

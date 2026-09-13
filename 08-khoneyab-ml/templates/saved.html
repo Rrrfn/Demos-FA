@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block title %}ملک‌های نشان‌شده | خانه‌یاب{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <header class="pagehead">
+    <span class="eyebrow">فهرست شخصی</span>
+    <h1>ملک‌های نشان‌شده</h1>
+    <p class="lead">نشان‌ها در نشست همین مرورگر نگه داشته می‌شوند؛ بدون حساب
+      کاربری و بدون ردیابی. {{ cards | length | fa }} ملک نشان‌شده دارید.</p>
+  </header>
+
+  {% if cards %}
+  <section>
+    <div class="grid grid-3">
+      {% for card in cards %}{{ ui.listing_card(card) }}{% endfor %}
+    </div>
+  </section>
+  {% else %}
+  <section>
+    <div class="empty">
+      <strong>هنوز ملکی نشان نکرده‌اید</strong>
+      <p>در هر کارت یا صفحهٔ ملک، دکمهٔ «نشان‌کردن» را بزنید تا اینجا جمع شوند.</p>
+      <p class="mt-2"><a class="btn" href="/search">دیدن آگهی‌ها</a></p>
+    </div>
+  </section>
+  {% endif %}
+
+  <section>{{ ui.disclaimer() }}</section>
+</div>
+{% endblock %}

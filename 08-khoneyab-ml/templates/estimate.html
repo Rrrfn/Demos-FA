@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block title %}برآورد قیمت ملک | خانه‌یاب{% endblock %}
+{% block description %}ارزش ملک را با مدل یادگیری ماشین برآورد کنید: قیمت، بازهٔ اطمینان، سهم هر ویژگی و آگهی‌های مشابه.{% endblock %}
+
+{% block content %}
+<div class="wrap">
+
+  <header class="pagehead">
+    <span class="eyebrow">برآورد ارزش</span>
+    <h1>ارزش ملک را با مدل بسنجید</h1>
+    <p class="lead">مشخصات را تغییر دهید؛ نتیجه بی‌درنگ به‌روز می‌شود. کنار هر عدد،
+      سهم ویژگی‌ها و بازهٔ اطمینان مدل نمایش داده می‌شود.</p>
+  </header>
+
+  <section aria-label="نمونه‌های آماده">
+    <div class="btn-row">
+      {% for name, preset in presets.items() %}
+      <button class="btn btn-ghost" type="button" data-preset='{{ preset | tojson }}'>{{ name }}</button>
+      {% endfor %}
+      <a class="btn btn-quiet" href="/estimate">بازنشانی</a>
+    </div>
+    <p class="muted mt-1 mb-0">نمونه‌های آماده برای دیدن تفاوت مناطق و متراژها در یک نگاه.</p>
+  </section>
+
+  <section class="split">
+    <form method="get" action="/estimate" data-estimate data-endpoint="{{ api_url }}" aria-label="مشخصات ملک">
+      <input type="hidden" name="f" value="1">
+      <div class="filters" style="position: static; max-height: none;">
+        <h2>مشخصات ملک</h2>
+
+        <div class="field">
+          <label for="district">منطقه</label>
+          <select id="district" name="district">
+            {% for row in districts[['district', 'district_name']].itertuples(index=False, name=None) %}
+            <option value="{{ row[0] }}" {% if row[0] == features.district %}selected{% endif %}>{{ row[1] }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="area">متراژ (مترمربع)</label>
+          <div class="pair">
+            <input id="area" type="number" name="area" min="40" max="400" step="5"
+                   value="{{ features.area }}" inputmode="numeric">
+            <input type="range" min="40" max="400" step="5" value="{{ features.area }}"
+                   aria-label="لغزندهٔ متراژ" style="flex:1" data-mirror="area">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="bedrooms">تعداد اتاق خواب</label>
+          <select id="bedrooms" name="bedrooms">
+            {% for count in range(0, 6) %}
+            <option value="{{ count }}" {% if count == features.bedrooms %}selected{% endif %}>
+              {{ 'بدون اتاق' if count == 0 else (count | digits) ~ ' اتاق' }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="age">سن بنا (سال)</label>
+          <div class="pair">
+            <input id="age" type="number" name="age" min="0" max="45" step="1"
+                   value="{{ features.age }}" inputmode="numeric">
+            <input type="range" min="0" max="45" step="1" value="{{ features.age }}"
+                   aria-label="لغزندهٔ سن بنا" style="flex:1" data-mirror="age">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="floor">طبقه</label>
+          <select id="floor" name="floor">
+            {% for level in range(-1, 16) %}
+            <option value="{{ level }}" {% if level == features.floor %}selected{% endif %}>{{ floor_label(level) }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <fieldset>
+          <legend>امکانات</legend>
+          <div class="checks">
+            <label class="check"><input type="checkbox" name="parking" value="1" {% if features.parking %}checked{% endif %}> پارکینگ</label>
+            <label class="check"><input type="checkbox" name="storage" value="1" {% if features.storage %}checked{% endif %}> انباری</label>
+            <label class="check"><input type="checkbox" name="elevator" value="1" {% if features.elevator %}checked{% endif %}> آسانسور</label>
+          </div>
+        </fieldset>
+
+        <button class="btn" type="submit">محاسبهٔ برآورد</button>
+        <p class="muted mt-1 mb-0" style="font-size:.78rem">بدون JavaScript هم کار می‌کند:
+          همین فرم با ارسال معمولی نتیجه را می‌آورد.</p>
+      </div>
+    </form>
+
+    <div data-estimate-result>
+      <div class="pricebox">
+        <span class="kpi-label">ارزش برآوردی مدل</span>
+        <div class="price-value"><span data-est-price>{{ estimate.price_text }}</span>
+          <span class="price-unit">تومان</span></div>
+        <p class="price-sub"><span data-est-m2>{{ estimate.price_per_m2 }}</span>
+          تومان در هر مترمربع</p>
+        <div class="band">
+          <div class="band-row">
+            <span>بازهٔ ۸۰ درصدی</span>
+            <strong><span data-est-low>{{ estimate.low_short }}</span> تا
+              <span data-est-high>{{ estimate.high_short }}</span> تومان</strong>
+          </div>
+          <div class="band-row">
+            <span>پهنای بازه</span>
+            <strong>±<span data-est-half>{{ estimate.half_width_pct }}</span>٪</strong>
+          </div>
+          <div class="band-row">
+            <span>ارزش پایهٔ شهر</span>
+            <strong><span data-est-base>{{ estimate.base_short }}</span> تومان</strong>
+          </div>
+          <div class="band-row">
+            <span>اثر مشخصات</span>
+            <strong><span data-est-delta>{{ estimate.delta_short }}</span> تومان</strong>
+          </div>
+        </div>
+      </div>
+
+      <p class="lead mt-2" data-est-summary>{{ estimate.summary }}</p>
+
+      <h3 class="mt-3 mb-1">سهم هر ویژگی در قیمت</h3>
+      <ul class="factors" data-est-factors>
+        {% for factor in estimate.factors %}
+        <li class="factor factor-{{ factor.direction }}">
+          <div class="factor-head">
+            <span class="factor-name">{{ factor.label }}<i>{{ factor.value }}</i></span>
+            <span class="factor-amount">{{ factor.signed }}{{ factor.amount }}</span>
+          </div>
+          <div class="track"><span style="width: {{ factor.width }}%"></span></div>
+        </li>
+        {% endfor %}
+      </ul>
+
+      <div class="kpis mt-3">
+        {{ ui.kpi('تعداد مشابه', estimate.comparable_count | fa, 'آگهی نزدیک در همین منطقه') }}
+        {{ ui.kpi('میانهٔ مشابه‌ها', estimate.comparable_median_short ~ ' تومان', 'قیمت آگهی') }}
+        {{ ui.kpi('میانهٔ قیمت متر', estimate.comparable_median_m2 ~ ' میلیون', 'تومان') }}
+        {{ ui.kpi('جایگاه این برآورد', estimate.standing, 'نسبت به میانهٔ مشابه‌ها') }}
+      </div>
+    </div>
+  </section>
+
+  <section>
+    {{ ui.section_head('بازبینی', 'آگهی‌های مشابه در کاتالوگ',
+        'برای سنجیدن این عدد، آن را با آگهی‌های واقعی همین کاتالوگ مقایسه کنید.') }}
+    {% if comparables %}
+      <div class="grid grid-3">
+        {% for card in comparables %}{{ ui.listing_card(card) }}{% endfor %}
+      </div>
+    {% else %}
+      <div class="empty"><strong>در این منطقه آگهی مشابهی نیست</strong></div>
+    {% endif %}
+  </section>
+
+  <section>{{ ui.disclaimer() }}</section>
+</div>
+{% endblock %}

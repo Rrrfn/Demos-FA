@@ -43,14 +43,26 @@ def library(env):
     for entry in manifest:                      # فایل‌ها باید واقعاً وجود داشته باشند
         with open(os.path.join(str(env["photo_dir"]), entry["file"]), "wb") as handle:
             handle.write(b"\xff\xd8\xff\xe0" + entry["file"].encode())
-    manifest_path = os.path.join(str(env["photo_dir"]), "manifest.json")
+
+    # نام فایل عمداً `manifest.json` نیست: بقیهٔ آزمون‌ها با همان نام پیش‌فرض
+    # `PhotoLibrary()` می‌سازند و اگر اینجا آن نام را بنویسیم، فهرست ساختگی
+    # به آزمون‌های بعدی نشت می‌کند.
+    manifest_path = os.path.join(str(env["photo_dir"]), "library-fixture.json")
     with open(manifest_path, "w", encoding="utf-8") as handle:
         json.dump(manifest, handle, ensure_ascii=False)
 
     saved = ph.MANIFEST_PATH
     ph.MANIFEST_PATH = manifest_path
-    yield ph.PhotoLibrary(manifest)
-    ph.MANIFEST_PATH = saved
+    try:
+        yield ph.PhotoLibrary(manifest)
+    finally:
+        ph.MANIFEST_PATH = saved
+        if os.path.exists(manifest_path):
+            os.remove(manifest_path)
+        for entry in manifest:
+            leftover = os.path.join(str(env["photo_dir"]), entry["file"])
+            if os.path.exists(leftover):
+                os.remove(leftover)
 
 
 def test_missing_archive_is_reported_honestly(empty_library):

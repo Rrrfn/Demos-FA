@@ -1,0 +1,103 @@
+{# عرض و ارتفاع واقعی از کنار فایل خوانده می‌شود، نه حدس. مرورگر با همین دو
+   عدد جای عکس را پیش از دانلود رزرو می‌کند و هنگام بارگذاری، محتوا نمی‌پرد. #}
+{% macro picture(image, alt, eager=false, cls='') %}
+  {%- if image and image.exists -%}
+  <img src="{{ image.src }}"
+       width="{{ image.width }}" height="{{ image.height }}"
+       alt="{{ alt }}"
+       {% if eager %}fetchpriority="high" decoding="async"{% else %}loading="lazy" decoding="async"{% endif %}
+       {% if cls %}class="{{ cls }}"{% endif %}>
+  {%- else -%}
+  <div class="noimg" aria-hidden="true">بدون تصویر</div>
+  {%- endif -%}
+{% endmacro %}
+
+{% macro section_head(eyebrow, title, sub=None) %}
+  <header class="sec-head">
+    {% if eyebrow %}<span class="eyebrow">{{ eyebrow }}</span>{% endif %}
+    <h2>{{ title }}</h2>
+    {% if sub %}<p class="sec-sub">{{ sub }}</p>{% endif %}
+  </header>
+{% endmacro %}
+
+{% macro listing_card(card) %}
+<article class="card" data-id="{{ card.id }}">
+  <a class="card-media" href="{{ card.url }}">
+    {{ picture(card.image, card.title) }}
+    {% if card.tag %}<span class="card-tag">{{ card.tag }}</span>{% endif %}
+    {% if card.is_luxury %}<span class="card-tag card-tag-alt">لوکس</span>{% endif %}
+  </a>
+  <div class="card-body">
+    <a class="card-title" href="{{ card.url }}">{{ card.title }}</a>
+    <p class="card-meta">
+      <span class="card-code">{{ card.id | fa_code }}</span>
+      {{ card.district }} · {{ card.floor }} · {{ card.bedrooms }}
+    </p>
+    <p class="card-chips">
+      {% for amenity in card.amenities %}<span class="chip">{{ amenity }}</span>{% endfor %}
+      {% if not card.amenities %}<span class="chip chip-quiet">بدون امکانات ویژه</span>{% endif %}
+    </p>
+    <p class="card-price">
+      <strong>{{ card.price }}</strong> <span class="unit">تومان</span>
+      <span class="card-unit">{{ card.price_per_m2 }} / متر</span>
+    </p>
+    <div class="card-actions">
+      <form method="post" action="/compare/toggle/{{ card.id }}" data-toggle="compare">
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <button type="submit" class="btn btn-sm btn-ghost{% if card.comparing %} is-on{% endif %}"
+                data-id="{{ card.id }}" aria-pressed="{{ 'true' if card.comparing else 'false' }}">
+          {{ 'در مقایسه' if card.comparing else 'مقایسه' }}
+        </button>
+      </form>
+      <form method="post" action="/saved/toggle/{{ card.id }}" data-toggle="saved">
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <button type="submit" class="btn btn-sm btn-ghost{% if card.saved %} is-on{% endif %}"
+                data-id="{{ card.id }}" aria-pressed="{{ 'true' if card.saved else 'false' }}">
+          {{ 'نشان‌شده' if card.saved else 'نشان‌کردن' }}
+        </button>
+      </form>
+    </div>
+  </div>
+</article>
+{% endmacro %}
+
+{% macro factor_bars(factors) %}
+<ul class="factors">
+  {% for factor in factors %}
+  <li class="factor factor-{{ factor.direction }}">
+    <div class="factor-head">
+      <span class="factor-name">{{ factor.label }}<i>{{ factor.value }}</i></span>
+      <span class="factor-amount">{{ factor.signed }}{{ factor.amount }}</span>
+    </div>
+    <div class="track"><span style="width: {{ factor.width }}%"></span></div>
+  </li>
+  {% endfor %}
+</ul>
+{% endmacro %}
+
+{% macro kpi(label, value, note='') %}
+  <div class="kpi">
+    <span class="kpi-label">{{ label }}</span>
+    <strong class="kpi-value">{{ value }}</strong>
+    {% if note %}<span class="kpi-note">{{ note }}</span>{% endif %}
+  </div>
+{% endmacro %}
+
+{% macro disclaimer() %}
+  <p class="notice notice-warn">
+    <strong>دادهٔ نمایشی.</strong> آگهی‌ها، مشخصات و قیمت‌ها سینتتیک‌اند و از معاملات
+    واقعی بازار نمی‌آیند. این سامانه برای نشان دادن یک خط لولهٔ کامل هوش قیمت‌گذاری
+    ساخته شده، نه برای اعلام نرخ ملک.
+  </p>
+{% endmacro %}
+
+{% macro chart_block(svg, caption='') %}
+  {% if svg %}
+    <figure class="chartbox">
+      {{ svg | safe }}
+      {% if caption %}<figcaption>{{ caption }}</figcaption>{% endif %}
+    </figure>
+  {% else %}
+    <p class="notice">دادهٔ کافی برای این نمودار نیست.</p>
+  {% endif %}
+{% endmacro %}

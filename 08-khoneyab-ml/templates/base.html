@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}خانه‌یاب — پلتفرم هوش بازار مسکن تهران{% endblock %}</title>
+<meta name="description" content="{% block description %}جست‌وجو، مقایسه و برآورد قیمت ملک در تهران؛ مدل یادگیری ماشین با توضیح سهم هر ویژگی و بازهٔ اطمینان.{% endblock %}">
+<meta name="theme-color" content="#12100E">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%2312100E'/><path d='M8 17.6 16 10l8 7.6V24h-5.6v-4.6h-4.8V24H8z' fill='%23C6A15B'/></svg>">
+{# فقط دو قلمی که بالای صفحه دیده می‌شوند پیش‌بار می‌شوند: متن بدنه (وزن
+   ۴۰۰) و تیتر نمایشی. بقیه با ``font-display: swap`` می‌آیند و صفحه را
+   متوقف نمی‌کنند.
+
+   این دو نشانی *بدون* نشانهٔ نسخه می‌آیند. قلم‌ها از داخل CSS خواسته
+   می‌شوند و آنجا نشانی بدون پارامتر است؛ اگر اینجا پارامتر بگذاریم، مرورگر
+   آن را منبعی جدا می‌بیند و همان قلم را دو بار دانلود می‌کند. #}
+<link rel="preload" href="{{ url_for('static', filename='fonts/Vazirmatn-Regular.woff2') }}" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{{ url_for('static', filename='fonts/markazi-arabic.woff2') }}" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{{ asset('css/app.css') }}" as="style">
+<link rel="stylesheet" href="{{ asset('css/app.css') }}">
+</head>
+<body>
+<a class="skip-link" href="#main">پرش به محتوای اصلی</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/" aria-label="خانه‌یاب، صفحهٔ خانه">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="30" height="30"><rect width="32" height="32" rx="7" fill="currentColor"/><path d="M8 17.6 16 10l8 7.6V24h-5.6v-4.6h-4.8V24H8z" fill="#C6A15B"/></svg>
+      </span>
+      <span class="brand-text">
+        <span class="brand-word">خانه‌یاب</span>
+        <span class="brand-sub">هوش بازار مسکن</span>
+      </span>
+    </a>
+
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mainnav" data-nav-toggle>
+      <span class="sr-only">فهرست</span>
+      <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+    </button>
+
+    <nav class="mainnav" id="mainnav" aria-label="ناوبری اصلی">
+      {% for key, href, label in nav %}
+        <a href="{{ href }}"{% if page == key %} aria-current="page"{% endif %}>{{ label }}</a>
+      {% endfor %}
+    </nav>
+
+    <div class="topbar-actions">
+      <a class="iconlink" href="/saved" aria-label="ملک‌های نشان‌شده">
+        <svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M5 3h10v14l-5-3.6L5 17z"/></svg>
+        <span>نشان‌شده</span>
+        <i class="counter{% if not saved_count %} is-empty{% endif %}" data-count="saved">{{ saved_count | fa }}</i>
+      </a>
+      <a class="iconlink" href="/compare" aria-label="فهرست مقایسه">
+        <svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 6h9M4 6l2.5-2.5M4 6l2.5 2.5M16 14H7M16 14l-2.5-2.5M16 14l-2.5 2.5"/></svg>
+        <span>مقایسه</span>
+        <i class="counter{% if not compare_count %} is-empty{% endif %}" data-count="compare">{{ compare_count | fa }}</i>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+{% block content %}{% endblock %}
+</main>
+
+<footer class="sitefoot">
+  <div class="wrap foot-grid">
+    <div>
+      <div class="brand brand-foot">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="28" height="28"><rect width="32" height="32" rx="7" fill="#FAF7F1"/><path d="M8 17.6 16 10l8 7.6V24h-5.6v-4.6h-4.8V24H8z" fill="#12100E"/></svg>
+        </span>
+        <span class="brand-text">
+          <span class="brand-word">خانه‌یاب</span>
+          <span class="brand-sub">KHANEYAB</span>
+        </span>
+      </div>
+      <p class="foot-note">سامانهٔ نمایشی هوش قیمت‌گذاری ملک. تمام آگهی‌ها و قیمت‌ها
+        <strong>سینتتیک</strong>‌اند و نرخ واقعی بازار نیستند.</p>
+    </div>
+    <nav aria-label="فهرست پای صفحه">
+      <h2 class="foot-h">کاوش</h2>
+      <ul>
+        {% for key, href, label in nav %}<li><a href="{{ href }}">{{ label }}</a></li>{% endfor %}
+      </ul>
+    </nav>
+    <div>
+      <h2 class="foot-h">داده و مدل</h2>
+      <ul>
+        <li><a href="/methodology">روش‌شناسی مدل</a></li>
+        <li><a href="/api/health">وضعیت سرویس (JSON)</a></li>
+        <li><a href="/api/overview">شاخص‌های بازار (JSON)</a></li>
+        <li><a href="/api/listings">کاتالوگ آگهی‌ها (JSON)</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap foot-base">
+    <span>{{ photo_total | fa }} عکس واقعی با مجوز آزاد · {{ 900 | fa }} آگهی نمونه · {{ 6000 | fa }} رکورد آموزشی</span>
+    <span>ساخته‌شده برای نمایش توان مهندسی داده</span>
+  </div>
+</footer>
+
+<div class="toast" role="status" aria-live="polite" data-toast hidden></div>
+<script src="{{ asset('js/app.js') }}" defer></script>
+</body>
+</html>

@@ -261,6 +261,18 @@ def features_frame(features: dict) -> pd.DataFrame:
     return pd.DataFrame([{name: features[name] for name in FEATURES}])
 
 
+def predict_frame(bundle: dict, frame: pd.DataFrame) -> np.ndarray:
+    """پیش‌بینی گروهی — یک فراخوانی مدل برای همهٔ ردیف‌ها.
+
+    تفاوت این تابع با صدا زدن ``predict`` در یک حلقه، فقط سرعت است، نه نتیجه.
+    هر فراخوانی ``sklearn`` روی یک ردیف، سرباری چند میلی‌ثانیه‌ای دارد
+    (اعتبارسنجی ستون‌ها، عبور از ``ColumnTransformer``، ساخت آرایه‌ها). وقتی
+    ده‌ها ردیف داریم، این سربار از خود محاسبه بیشتر می‌شود؛ یک فراخوانی
+    دسته‌ای همان اعداد را در کسری از زمان می‌دهد.
+    """
+    return bundle["model"].predict(frame.reindex(columns=list(FEATURES)))
+
+
 def predict(bundle: dict, features: dict) -> int:
     """قیمت پیش‌بینی‌شدهٔ نقطه‌ای."""
     frame = features_frame(features)

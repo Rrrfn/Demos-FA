@@ -19,14 +19,25 @@ from __future__ import annotations
 import json
 import os
 
-from .config import PHOTO_DIR
+from .config import PHOTO_DIR, THUMB_DIR
 
 MANIFEST_PATH = os.path.join(PHOTO_DIR, "manifest.json")
 
-#: پیشوند نشانی عکس‌ها. مسیر مطلق است (با اسلش ابتدایی) چون Streamlit پوشهٔ
-#: ``static`` را روی نشانی ``/app/static/`` سرو می‌کند؛ مسیر نسبی در
-#: صفحه‌های تودرتو به مسیر جاری چسبیده و عکس پیدا نمی‌شود.
-PHOTO_URL_PREFIX = "/app/static/img/properties/"
+#: پیشوند نشانی عکس‌ها. مسیر مطلق است (با اسلش ابتدایی) چون وبه‌سرور پوشهٔ
+#: ``static`` را از ریشه سرو می‌کند؛ مسیر نسبی در صفحه‌های تودرتو (مثل
+#: ``/listing/KH-1001``) به مسیر جاری می‌چسبد و عکس پیدا نمی‌شود.
+PHOTO_URL_PREFIX = "/static/img/properties/"
+THUMB_URL_PREFIX = "/static/img/properties/thumbs/"
+
+#: نام نسخه‌های کم‌حجم، هم‌آهنگ با ``tools/make_thumbs.py``.
+TINY_VARIANT = "tiny"
+CARD_VARIANT = "card"
+HERO_VARIANT = "hero"
+FULL_VARIANT = "source"
+
+#: فایل ابعاد واقعی — نوشتهٔ ``tools/make_thumbs.py``.
+DIMENSIONS_PATH = os.path.join(THUMB_DIR, "dimensions.json")
+_dimensions_cache: dict | None = None
 
 
 def load_manifest() -> list[dict]:
@@ -73,8 +84,78 @@ def license_family(name: str | None) -> str:
 
 
 def photo_url(name: str | None) -> str:
-    """نشانی وب عکس برای درج در HTML."""
+    """نشانی وب نسخهٔ اصلی عکس."""
     return f"{PHOTO_URL_PREFIX}{name}" if name else ""
+
+
+def variant_exists(name: str, variant: str) -> bool:
+    """آیا نسخهٔ کم‌حجم این عکس ساخته شده است؟"""
+    stem, _ = os.path.splitext(name or "")
+    return bool(stem) and os.path.exists(os.path.join(THUMB_DIR, f"{stem}.{variant}.jpg"))
+
+
+def variant_url(name: str | None, variant: str) -> str:
+    """نشانی نسخهٔ کم‌حجم؛ در نبود آن، برمی‌گردد به نسخهٔ اصلی.
+
+    این عقب‌نشینی عمدی است: اگر مرحلهٔ ساخت نسخه‌های کم‌حجم در استقرار اجرا
+    نشود، سایت باید همچنان کار کند — فقط سنگین‌تر، نه شکسته.
+    """
+    if not name:
+        return ""
+    if variant_exists(name, variant):
+        stem, _ = os.path.splitext(name)
+        return f"{THUMB_URL_PREFIX}{stem}.{variant}.jpg"
+    return photo_url(name)
+
+
+def dimensions() -> dict:
+    """جدول ابعاد واقعی — یک بار خوانده و نگه داشته می‌شود."""
+    global _dimensions_cache
+    if _dimensions_cache is None:
+        try:
+            with open(DIMENSIONS_PATH, encoding="utf-8") as handle:
+                _dimensions_cache = json.load(handle)
+        except (OSError, json.JSONDecodeError):
+            _dimensions_cache = {}
+    return _dimensions_cache
+
+
+def size_of(name: str | None, variant: str = CARD_VARIANT) -> tuple[int, int] | None:
+    """ابعاد واقعی یک نسخهٔ مشخص، یا ``None`` اگر ناشناخته باشد."""
+    if not name:
+        return None
+    entry = dimensions().get(variant, {}).get(name)
+    if not entry or len(entry) != 2:
+        return None
+    return int(entry[0]), int(entry[1])
+
+
+def sized(name: str | None, variant: str = CARD_VARIANT) -> dict[str, object]:
+    """اطلاعات یک عکس برای قالب: نشانی و ابعاد واقعی.
+
+    عمداً از ``srcset`` استفاده نمی‌شود. با توصیف‌گر ``w``، مرورگر بر پایهٔ
+    عددی که ما اعلام می‌کنیم تصمیم می‌گیرد؛ اگر آن عدد با عرض واقعی فایل
+    نخواند (مثلاً ۱۹۲۰ برای تصویری که ۱۲۸۰ است)، هم انتخاب غلط می‌شود و هم
+    نسبت ابعاد اعلامی با واقعیت فرق می‌کند. اینجا هر نقش، یک فایل با اندازهٔ
+    درست و ابعاد راستین می‌گیرد: کارت ۶۴۰ پیکسل، بنر تا ۱۵۰۰.
+    """
+    if not name:
+        return {"src": "", "width": 0, "height": 0, "exists": False}
+
+    if variant == FULL_VARIANT:
+        url = photo_url(name)
+        actual = size_of(name, FULL_VARIANT)
+    else:
+        url = variant_url(name, variant)
+        actual = size_of(name, variant)
+
+    fallback = {
+        TINY_VARIANT: (200, 125),
+        CARD_VARIANT: (640, 420),
+        HERO_VARIANT: (1500, 900),
+    }.get(variant, (1280, 800))
+    width, height = actual or fallback
+    return {"src": url, "width": width, "height": height, "exists": True}
 
 
 def credit_for(entries: list[dict], name: str | None) -> dict:

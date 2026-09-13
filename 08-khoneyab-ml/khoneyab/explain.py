@@ -28,8 +28,8 @@ import pandas as pd
 from .config import FEATURES, RANDOM_SEED
 from .dataset import get_dataset
 from .labels import (fa_number, feature_delta_label, feature_value_label)
-from .listings import Listing, all_listings
-from .train import predict, predict_interval
+from .listings import Listing, all_listings, listings_frame
+from .train import (features_frame, predict, predict_frame, predict_interval)
 
 #: تعداد ترتیب‌هایی که برای میانگین‌گیری سهم ویژگی‌ها اجرا می‌شود. یک ترتیب
 #: کافی نیست و همهٔ ترتیب‌ها (۸! = ۴۰٬۳۲۰) هم گران است؛ این تعداد، اثر ترتیب را
@@ -142,27 +142,56 @@ def attribution_orders() -> tuple[tuple[str, ...], ...]:
     return tuple(orders)
 
 
+def attribution_states(reference: dict, features: dict,
+                       orders: tuple[tuple[str, ...], ...]) -> pd.DataFrame:
+    """همهٔ حالت‌های میانی سهم‌گذاری، در یک جدول.
+
+    برای هر ترتیب، از ملک مرجع شروع می‌کنیم و ویژگی‌ها را یکی‌یکی جایگزین
+    می‌کنیم؛ هر ترتیب ``len(FEATURES) + 1`` حالت دارد (خود مرجع، به‌علاوهٔ یک
+    حالت پس از افزودن هر ویژگی). همهٔ این حالت‌ها یک‌جا ساخته می‌شوند تا
+    پیش‌بینی‌شان با *یک* فراخوانی مدل انجام شود.
+    """
+    rows: list[dict] = []
+    for order in orders:
+        current = dict(reference)
+        rows.append(dict(current))
+        for name in order:
+            current = dict(current)
+            current[name] = features[name]
+            rows.append(current)
+    return pd.DataFrame(rows).reindex(columns=list(FEATURES))
+
+
 def factor_effects(bundle: dict, features: dict) -> tuple[tuple[FactorEffect, ...], int, int]:
     """سهم هر ویژگی + قیمت پایه + باقی‌ماندهٔ گردکردن.
 
     برای هر ترتیب، از ملک مرجع آغاز می‌کنیم و ویژگی‌ها را یکی‌یکی وارد می‌کنیم.
     چون در هر ترتیب مجموع گام‌ها برابر کل تغییر قیمت است، میانگین گرفتن از
     سهم‌ها هم این ویژگی را حفظ می‌کند و «اثر متقابلِ» بی‌توضیح باقی نمی‌ماند.
+
+    همهٔ حالت‌ها در یک فراخوانی دسته‌ای پیش‌بینی می‌شوند. پیش از این، هر گام
+    جداگانه به مدل داده می‌شد و همین صفحه را چند ثانیه‌ای می‌کرد؛ ریاضیات
+    عوض نشده، فقط سربار هر فراخوانی حذف شده است.
     """
     reference = reference_property()
-    base_price = predict(bundle, reference)
-    full_price = predict(bundle, features)
+    orders = attribution_orders()
+    span = len(FEATURES) + 1
+
+    states = attribution_states(reference, features, orders)
+    prices = predict_frame(bundle, states)
+
+    base_price = int(round(float(prices[0])))
+    full_price = int(round(float(predict_frame(
+        bundle, features_frame(features))[0])))
 
     totals = {name: 0.0 for name in FEATURES}
-    orders = attribution_orders()
-    for order in orders:
-        current = dict(reference)
-        previous = base_price
-        for name in order:
-            current[name] = features[name]
-            price = predict(bundle, current)
-            totals[name] += price - previous
-            previous = price
+    for index, order in enumerate(orders):
+        offset = index * span
+        previous = float(prices[offset])
+        for position, name in enumerate(order):
+            current = float(prices[offset + position + 1])
+            totals[name] += current - previous
+            previous = current
 
     effects = [
         FactorEffect(
@@ -175,7 +204,7 @@ def factor_effects(bundle: dict, features: dict) -> tuple[tuple[FactorEffect, ..
     ]
     effects.sort(key=lambda item: -abs(item.amount))
     residual = int(full_price - base_price - sum(item.amount for item in effects))
-    return tuple(effects), int(base_price), residual
+    return tuple(effects), base_price, residual
 
 
 def _similarity_distance(row: pd.Series, target: dict) -> float:
@@ -193,12 +222,9 @@ def _similarity_distance(row: pd.Series, target: dict) -> float:
 
 def find_comparables(features: dict, *, limit: int = COMPARABLE_MAX) -> ComparableSet:
     """نزدیک‌ترین آگهی‌های همان منطقه به این مشخصات."""
-    frame = pd.DataFrame([{
-        "id": item.id, "district": item.district, "area": item.area,
-        "bedrooms": item.bedrooms, "age": item.age, "floor": item.floor,
-        "parking": item.parking, "storage": item.storage, "elevator": item.elevator,
-        "price": item.price, "price_per_m2": item.price_per_m2,
-    } for item in all_listings()])
+    # جدول مشترک کاتالوگ از ``listings`` می‌آید و کش شده است؛ ساختن دوبارهٔ آن
+    # در هر درخواست، هزینهٔ بی‌دلیلی است.
+    frame = listings_frame().copy()
 
     candidates = frame[frame["district"] == int(features["district"])].copy()
     if candidates.empty:
@@ -222,7 +248,7 @@ def find_comparables(features: dict, *, limit: int = COMPARABLE_MAX) -> Comparab
     candidates = candidates.sort_values("_distance").head(limit)
 
     lookup = {item.id: item for item in all_listings()}
-    items = tuple(lookup[row["id"]] for _, row in candidates.iterrows())
+    items = tuple(lookup[identifier] for identifier in candidates["id"] if identifier in lookup)
     return ComparableSet(
         items=items,
         median_price=int(candidates["price"].median()) if len(candidates) else 0,

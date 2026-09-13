@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}صفحه پیدا نشد | خانه‌یاب{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <section class="pagehead">
+    <span class="eyebrow">خطای ۴۰۴</span>
+    <h1>این نشانی چیزی نشان نمی‌دهد</h1>
+    <p class="lead">ممکن است شناسهٔ آگهی در نشانی جابه‌جا شده باشد، یا این ملک
+      دیگر در کاتالوگ نباشد. از جست‌وجو شروع کنید.</p>
+  </section>
+
+  <section>
+    <div class="empty">
+      <strong>راه‌های ادامه</strong>
+      <p class="mt-1">می‌توانید فهرست کامل آگهی‌ها را ببینید، برآورد قیمت بگیرید،
+        یا تحلیل بازار را بخوانید.</p>
+      <p class="btn-row mt-2" style="justify-content:center">
+        <a class="btn" href="/search">جست‌وجوی ملک</a>
+        <a class="btn btn-ghost" href="/estimate">برآورد قیمت</a>
+        <a class="btn btn-ghost" href="/analytics">تحلیل بازار</a>
+      </p>
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block content %}
+<div class="wrap hero-wrap">
+
+  <section class="hero" aria-labelledby="hero-title">
+    {% if hero %}
+    <div class="hero-media">
+      {{ ui.picture(hero, 'نمای یک ساختمان مسکونی مدرن',eager=true) }}
+    </div>
+    {% endif %}
+    <div class="hero-veil"></div>
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <span class="eyebrow">هوش بازار مسکن تهران</span>
+        <h1 id="hero-title">قیمت را <span class="hero-h1-accent">پیش از تصمیم</span> بدانید</h1>
+        <p>جست‌وجو، مقایسه و برآورد ارزش ملک در یک جا. مدل یادگیری ماشین روی
+          مشخصات ملک آموزش دیده و برای هر آگهی، ارزش برآوردی، بازهٔ اطمینان و
+          دلیل عدد را نشان می‌دهد.</p>
+      </div>
+
+      <form class="searchbar" method="get" action="/search" role="search" aria-label="جست‌وجوی ملک">
+        <div class="field">
+          <label for="hero-district">منطقه</label>
+          <select id="hero-district" name="districts">
+            <option value="">همهٔ مناطق</option>
+            {% for row in districts.iterrows() %}
+            {% set row = row[1] %}
+            <option value="{{ row['district'] }}">{{ row['district_name'] }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="hero-area">حداقل متراژ</label>
+          <input id="hero-area" type="number" name="amin" min="0" max="400" step="5" placeholder="مثلاً ۹۰" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label for="hero-price">حداکثر قیمت (میلیارد تومان)</label>
+          <input id="hero-price" type="number" name="pmax" min="1" max="200" step="0.5" placeholder="مثلاً ۱۵" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label for="hero-sort">ترتیب</label>
+          <select id="hero-sort" name="sort">
+            <option>تازه‌ترین</option>
+            <option>ارزان‌ترین</option>
+            <option>کم‌ترین قیمت متر</option>
+          </select>
+        </div>
+        <button class="btn btn-lg" type="submit">جست‌وجو</button>
+      </form>
+    </div>
+  </section>
+
+  <section aria-label="شاخص‌های بازار">
+    <div class="kpis">
+      {{ ui.kpi('آگهی فعال', overview.listings | fa, 'در کاتالوگ نمونه') }}
+      {{ ui.kpi('میانهٔ قیمت ملک', (overview.median_price / 1e9) | fa(decimals=2) ~ ' میلیارد', 'تومان') }}
+      {{ ui.kpi('میانهٔ قیمت متر', (overview.median_price_m2 / 1e6) | fa ~ ' میلیون', 'تومان در مترمربع') }}
+      {{ ui.kpi('دقت مدل (R²)', insights.r2 | fa(decimals=3), 'روی دادهٔ آزمون، ۵ تایی اعتبارسنجی‌شده') }}
+    </div>
+  </section>
+
+  <section>
+    {{ ui.section_head('مسیر سه‌گامی', 'چطور کار می‌کند') }}
+    <div class="steps">
+      <article class="step">
+        <h3>بگردید</h3>
+        <p class="muted">با فیلتر منطقه، متراژ، تعداد اتاق، سن بنا و امکانات، آگهی‌های
+          مناسب را از میان {{ overview.listings | fa }} ملک نمونه جدا کنید.</p>
+      </article>
+      <article class="step">
+        <h3>مقایسه کنید</h3>
+        <p class="muted">تا چهار ملک را کنار هم بگذارید و قیمت، متراژ، سن و
+          امکاناتشان را در یک جدول و دو نمودار ببینید.</p>
+      </article>
+      <article class="step">
+        <h3>برآورد بگیرید</h3>
+        <p class="muted">ارزش برآوردی مدل، بازهٔ اطمینان کالیبره‌شده، سهم هر ویژگی
+          در قیمت، و آگهی‌های مشابه همان منطقه.</p>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-row">
+      {{ ui.section_head('گزیده', 'گران‌ترین مترهای شهر',
+          'سه آگهی با بالاترین قیمت هر مترمربع در کاتالوگ نمونه.') }}
+      <a class="btn btn-ghost" href="/search?sort=بیشترین قیمت متر">همهٔ آگهی‌ها</a>
+    </div>
+    <div class="grid grid-3">
+      {% for card in cards %}{{ ui.listing_card(card) }}{% endfor %}
+    </div>
+  </section>
+
+  <section>
+    {{ ui.section_head('تحلیل', 'نبض بازار در یک نگاه',
+        'همهٔ نمودارها از تجمیع واقعی همین کاتالوگ ساخته شده‌اند.') }}
+    <div class="split">
+      <div>{{ ui.chart_block(district_chart, 'میانهٔ قیمت هر مترمربع برای هشت منطقهٔ گران‌ترین کاتالوگ.') }}</div>
+      <div>{{ ui.chart_block(distribution_chart, 'شکل توزیع قیمت آگهی‌ها؛ هر میله یک سطل قیمتی است.') }}</div>
+    </div>
+    <p class="mt-2"><a class="btn btn-ghost" href="/analytics">تحلیل کامل بازار</a></p>
+  </section>
+
+  <section>
+    {{ ui.section_head('روش', 'عددی که می‌بینید از کجا می‌آید',
+        'مدل، معیارهایش و محدودیت‌هایش را کامل گزارش کرده‌ایم.') }}
+    <div class="grid grid-4">
+      {{ ui.kpi('نوع مدل', insights.best_model, 'برندهٔ مقایسهٔ سه مدل') }}
+      {{ ui.kpi('میانهٔ خطای درصدی', insights.mape_pct | fa(decimals=1) ~ '٪', 'MAPE روی دادهٔ آزمون') }}
+      {{ ui.kpi('اعتبارسنجی متقابل', '±' ~ (insights.cv_r2_std | fa(decimals=3)), 'انحراف معیار R² در ۵ تایی') }}
+      {{ ui.kpi('پوشش بازهٔ ۸۰٪', (insights.interval.measured_coverage_pct | fa(decimals=1)) ~ '٪', 'اندازه‌گیری‌شده، نه ادعاشده') }}
+    </div>
+    <p class="mt-2"><a class="btn btn-ghost" href="/methodology">متدولوژی کامل</a></p>
+  </section>
+
+  <section>
+    {{ ui.disclaimer() }}
+  </section>
+
+</div>
+{% endblock %}

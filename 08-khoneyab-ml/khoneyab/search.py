@@ -11,7 +11,7 @@ from dataclasses import dataclass, field, replace
 
 import pandas as pd
 
-from .config import AREA_RANGE, AGE_RANGE, BEDROOM_RANGE
+from .config import AREA_RANGE, AGE_RANGE, BEDROOM_RANGE, to_persian_digits
 from .listings import Listing, all_listings, listings_frame
 
 PAGE_SIZE = 12
@@ -52,7 +52,7 @@ class SearchQuery:
         """فهرست فیلترهای فعال — برای نشان دادن «چه چیزی فیلتر شده»."""
         labels: list[str] = []
         if self.districts:
-            labels.append(f"{len(self.districts)} منطقه")
+            labels.append(f"{to_persian_digits(len(self.districts))} منطقه")
         if self.price_min is not None or self.price_max is not None:
             labels.append("بازهٔ قیمت")
         if self.area_min is not None or self.area_max is not None:

@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block title %}متدولوژی مدل و داده | خانه‌یاب{% endblock %}
+{% block description %}دیتاست، روش آموزش، معیارهای واقعی مدل، کالیبراسیون بازهٔ اطمینان، محدودیت‌ها و اعتبار عکس‌ها.{% endblock %}
+
+{% block content %}
+<div class="wrap">
+
+  <header class="pagehead">
+    <span class="eyebrow">روش‌شناسی</span>
+    <h1>عدد از کجا می‌آید، و کجا را نمی‌پوشاند</h1>
+    <p class="lead">این صفحه همان چیزی است که معمولاً در نمونه‌های نمایشی جا می‌ماند:
+      دیتاست، روش ارزیابی، محدودیت‌ها، و فهرست کامل اعتبار عکس‌ها. اگر قرار است
+      به عددی اعتماد شود، راه ساختنش باید باز باشد.</p>
+  </header>
+
+  <section>
+    {{ ui.section_head('گام ۱', 'دیتاست',
+        'داده از یک فرایند تولید سینتتیک با seed ثابت می‌آید — تعیین‌کننده و بازتولیدپذیر.') }}
+    <div class="split">
+      <div class="stack">
+        <p>هیچ معاملهٔ واقعی در این پروژه نیست و ادعایی هم درباره‌اش نمی‌شود.
+          قیمت هر ملک از یک رابطهٔ ساختاری ساخته می‌شود: قیمت پایهٔ هر متر، ضرب در
+          ضریب منطقه، تعدیل سن بنا، طبقه، و امکانات؛ و در پایان یک نوفهٔ نسبی.
+          چون seed عدد ثابت است، هر اجرا دقیقاً همین دیتاست را می‌سازد.</p>
+        <p>مزیت این کار برای یک نمونهٔ نمایشی روشن است: خط لوله از تولید داده تا
+          برآورد و توضیح، کامل و قابل بازبینی است. عیبش هم روشن است: مدل، الگویی
+          را یاد می‌گیرد که خودمان گذاشته‌ایم، نه پیچیدگی بازار واقعی. همین را در
+          بخش محدودیت‌ها صریح نوشته‌ایم.</p>
+      </div>
+      <div class="kpis">
+        {{ ui.kpi('تعداد رکورد', metrics.n_samples | fa, 'سطر آموزشی') }}
+        {{ ui.kpi('تقسیم آزمون', (metrics.test_size * 100) | fa(decimals=0) ~ '٪', (metrics.n_test | fa) ~ ' رکورد آزمون') }}
+        {{ ui.kpi('ویژگی‌های ورودی', metrics.features | length | fa, 'عدد و دسته‌ای') }}
+        {{ ui.kpi('seed', 42 | fa, 'ثابت و اعلام‌شده') }}
+      </div>
+    </div>
+    <p class="muted mt-2">ویژگی‌ها: منطقه، متراژ، تعداد اتاق، سن بنا، طبقه، پارکینگ،
+      انباری و آسانسور. قیمت هر مترمربع و قیمت نهایی هرگز به مدل داده نمی‌شوند —
+      اگر داده می‌شدند، مدل به‌جای یادگیری، صورت مسئله را حفظ می‌کرد.</p>
+  </section>
+
+  <section>
+    {{ ui.section_head('گام ۲', 'مدل و ارزیابی',
+        'سه مدل با سطوح پیچیدگی متفاوت مقایسه می‌شوند و برنده با اعتبارسنجی متقابل تثبیت می‌شود.') }}
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">مدل</th>
+            <th scope="col" class="num">R² آزمون</th>
+            <th scope="col" class="num">MAE (میلیارد)</th>
+            <th scope="col" class="num">MAPE</th>
+            <th scope="col" class="num">زمان آموزش</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for name, result in metrics.results.items() %}
+          <tr>
+            <td>{% if name == metrics.best_model %}<strong>{{ name }}</strong>
+              <span class="badge badge-bronze">برنده</span>{% else %}{{ name }}{% endif %}</td>
+            <td class="num">{{ result.r2 | fa(decimals=4) }}</td>
+            <td class="num">{{ (result.mae_toman / 1e9) | fa(decimals=2) }}</td>
+            <td class="num">{{ result.mape_pct | fa(decimals=2) }}٪</td>
+            <td class="num">{{ result.fit_seconds | fa(decimals=2) }}s</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="muted mt-2">مقایسه روی یک تقسیم آزمون انجام می‌شود، اما نتیجهٔ برنده
+      فقط به آن تقسیم تکیه نمی‌کند: اعتبارسنجی متقابل
+      {{ metrics.cv_folds | fa }}-تایی روی کل داده اجرا می‌شود تا معلوم شود دقت به
+      یک تقسیم خوش‌شانس وابسته نیست. R² اعتبارسنجی
+      {{ metrics.results[metrics.best_model].cv_r2_mean | fa(decimals=4) }} با انحراف
+      معیار {{ metrics.results[metrics.best_model].cv_r2_std | fa(decimals=4) }} است.</p>
+  </section>
+
+  <section>
+    {{ ui.section_head('گام ۳', 'بازهٔ اطمینان — کالیبره، نه ادعاشده',
+        'دو مدل چندکی (۱۰٪ و ۹۰٪) بازه می‌سازند، و پوشش واقعی اندازه‌گیری می‌شود.') }}
+    <p>مدل‌های چندکی روی دادهٔ محدود، بازه‌ای باریک‌تر از وعده می‌دهند. به‌جای
+      چشم‌پوشی از این اختلاف، ضریب پهنا روی یک نیمهٔ کالیبراسیون محاسبه می‌شود و
+      پوشش نهایی روی نیمهٔ بررسی اندازه‌گیری می‌شود — نیمه‌ای که کالیبراسیون
+      هرگز آن را ندیده است.</p>
+    <div class="split">
+      <div>{{ ui.chart_block(interval_chart, 'سهم پوشش اندازه‌گیری‌شده در برابر هدف ۸۰ درصدی.') }}</div>
+      <div class="kpis">
+        {{ ui.kpi('هدف', (metrics.interval.target_coverage_pct | fa) ~ '٪', 'سطح اطمینان وعده‌داده‌شده') }}
+        {{ ui.kpi('اندازه‌گیری‌شده', (metrics.interval.measured_coverage_pct | fa(decimals=1)) ~ '٪', 'روی نیمهٔ بررسی') }}
+        {{ ui.kpi('ضریب کالیبراسیون', '×' ~ (metrics.interval.calibration_factor | fa(decimals=2)), 'بزرگ‌نمایی لازم') }}
+        {{ ui.kpi('میانگین پهنای بازه', (metrics.interval.mean_width_toman / 1e9) | fa(decimals=2) ~ ' میلیارد', 'تومان') }}
+      </div>
+    </div>
+  </section>
+
+  <section>
+    {{ ui.section_head('گام ۴', 'توضیح‌پذیری',
+        'سهم هر ویژگی دقیقاً جمع می‌شود؛ هیچ «باقی‌ماندهٔ توضیح‌داده‌نشده‌ای» نمی‌ماند.') }}
+    <div class="split">
+      <div>{{ ui.chart_block(importance_chart) }}</div>
+      <div>
+        <p>برای هر ملک، از یک «ملک مرجع» با میانهٔ مشخصات شهر شروع می‌کنیم و
+          ویژگی‌ها را یکی‌یکی به مقدار واقعی ملک می‌بریم. هر گام قیمت را به اندازه‌ای
+          جابه‌جا می‌کند و همان جابه‌جایی، سهم آن ویژگی است.</p>
+        <p>ترتیب برداشتن ویژگی‌ها روی نتیجه اثر دارد. برای خنثی‌کردن این اثر،
+          سهم‌ها میانگین چند ترتیب مختلف است. خاصیت مهم این روش آن است که مجموع
+          سهم‌ها <strong>دقیقاً</strong> برابر اختلاف با ملک مرجع می‌ماند؛ پس در
+          گزارش هیچ اثر متقابلی بی‌توضیح نمی‌ماند.</p>
+        <p class="muted">این محاسبه در نسخهٔ اول برای هر ملک حدود ۱٫۷ ثانیه طول
+          می‌کشید، چون هر گام جداگانه به مدل داده می‌شد. الان همهٔ حالت‌ها در یک
+          فراخوانی دسته‌ای پیش‌بینی می‌شوند: حدود ۴۰ میلی‌ثانیه، با همان ریاضیات و
+          همان اعداد.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    {{ ui.section_head('محدودیت‌ها', 'چه چیزی این سامانه نیست') }}
+    <ul class="stack">
+      <li><strong>قیمت واقعی بازار نیست.</strong> دیتاست سینتتیک است و ضرایب منطقه
+        از ساختار کلی بازار الگو گرفته‌اند، نه از معاملات ثبت‌شده.</li>
+      <li><strong>خارج از دامنه اعتبار نمی‌کند.</strong> متراژ بین ۴۰ تا ۴۰۰ متر،
+        سن بنا تا ۴۵ سال و طبقه تا ۱۵. ورودی بیرون از این بازه معنا ندارد.</li>
+      <li><strong>ویژگی‌های کیفی را نمی‌بیند.</strong> نور، کیفیت ساخت، سند،
+        دسترسی و موقعیت کوچه در مدل نیستند — در بازار واقعی همین‌ها تعیین‌کننده‌اند.</li>
+      <li><strong>تاریخچه ندارد.</strong> همهٔ تحلیل‌ها مقطعی‌اند. چون دادهٔ زمانی
+        وجود ندارد، نمودار روند هم ساخته نمی‌شود؛ جای آن با مقایسهٔ مقطعی مناطق پر شده.</li>
+      <li><strong>آگهی‌ها نمونه‌اند.</strong> ۹۰۰ آگهیِ نمایش‌داده‌شده، نمونهٔ
+        بخشی از دیتاست تولیدی‌اند و فهرست واقعی بازار نیستند.</li>
+    </ul>
+  </section>
+
+  <section>
+    {{ ui.section_head('اعتبار تصاویر',
+        'همهٔ ' ~ (photo_total | fa) ~ ' عکس واقعی و دارای مجوز آزادند',
+        'هر ملک در این پروژه سینتتیک است، پس «عکس واقعی آن ملک» وجود ندارد.
+         عکس‌ها نمادین‌اند و اینجا با پدیدآورنده و مجوز ثبت شده‌اند.') }}
+    <div class="tablewrap" style="max-height: 32rem; overflow-y: auto;">
+      <table class="table-tight credits">
+        <thead>
+          <tr>
+            <th scope="col">عکس</th>
+            <th scope="col">نوع</th>
+            <th scope="col">پدیدآورنده</th>
+            <th scope="col">مجوز</th>
+            <th scope="col">منبع</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for credit in credits %}
+          <tr>
+            <td class="thumb-cell">
+              {% if credit.thumb %}
+                {{ ui.picture(credit.thumb, credit.kind,false, 'credit-thumb') }}
+              {% else %}—{% endif %}
+            </td>
+            <td>{{ credit.kind }}</td>
+            <td class="latin">{{ credit.author }}</td>
+            <td>{{ credit.license }}</td>
+            <td>
+              {% if credit.page %}
+              <a class="latin" href="{{ credit.page }}" rel="noopener nofollow" target="_blank">{{ credit.provider }}</a>
+              {% else %}<span class="latin">{{ credit.provider }}</span>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="muted mt-2">نام فایل و نشانی دقیق هر تصویر در
+      <code>static/img/properties/CREDITS.md</code> مخزن آمده است.</p>
+  </section>
+
+  <section>
+    {{ ui.section_head('API', 'همین داده‌ها به شکل JSON') }}
+    <div class="tablewrap">
+      <table class="table-tight">
+        <thead><tr><th scope="col">نقطهٔ پایانی</th><th scope="col">کار</th></tr></thead>
+        <tbody>
+          <tr><td><code>GET /api/health</code></td><td>وضعیت سرویس، مدل و تعداد آگهی</td></tr>
+          <tr><td><code>GET /api/overview</code></td><td>شاخص‌های کلی بازار و معیارهای مدل</td></tr>
+          <tr><td><code>GET /api/listings</code></td><td>جست‌وجوی صفحه‌بندی‌شده با همان فیلترهای سایت</td></tr>
+          <tr><td><code>GET /api/listings/&lt;id&gt;</code></td><td>یک ملک با برآورد و ملک‌های مشابه</td></tr>
+          <tr><td><code>GET /api/estimate</code></td><td>برآورد ارزش از مشخصات ورودی</td></tr>
+          <tr><td><code>GET /api/analytics</code></td><td>تجمیع مناطق برای نمودارها</td></tr>
+          <tr><td><code>GET /api/methodology</code></td><td>معیارهای مدل و محدودیت‌ها</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>{{ ui.disclaimer() }}</section>
+</div>
+{% endblock %}

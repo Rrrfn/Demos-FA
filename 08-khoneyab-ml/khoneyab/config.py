@@ -15,9 +15,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 MODELS_DIR = os.path.join(BASE_DIR, "models")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 PHOTO_DIR = os.path.join(STATIC_DIR, "img", "properties")
+#: نسخه‌های کم‌حجم عکس‌ها — کنار منبع‌ها می‌مانند تا یک جا سرو شوند.
+THUMB_DIR = os.path.join(PHOTO_DIR, "thumbs")
 
-for _path in (DATA_DIR, MODELS_DIR, PHOTO_DIR):
+for _path in (DATA_DIR, MODELS_DIR, PHOTO_DIR, THUMB_DIR):
     os.makedirs(_path, exist_ok=True)
 
 # ---------------------------------------------------------------- تکرارپذیری
