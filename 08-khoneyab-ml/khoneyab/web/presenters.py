@@ -193,8 +193,10 @@ def distribution_chart() -> str:
 
     frame = services.distribution()
     points = [(float(row["center"]), int(row["count"])) for _, row in frame.iterrows()]
+    #: واحد کامل نوشته می‌شود، نه «م»؛ چون در همین صفحه نمودار دیگری با
+    #: مقیاس میلیون هست و یک حرف مشترک بین دو مقیاس، خواننده را گمراه می‌کند.
     return charts.histogram(
-        points, unit=" م", x_decimals=0, label_every=6,
+        points, unit=" میلیارد", x_decimals=0, label_every=6,
         title="توزیع قیمت آگهی‌ها (میلیارد تومان)")
 
 
@@ -205,7 +207,7 @@ def per_m2_chart() -> str:
     frame = services.per_m2_distribution()
     points = [(float(row["center"]), int(row["count"])) for _, row in frame.iterrows()]
     return charts.histogram(
-        points, unit=" م", x_decimals=0, label_every=6,
+        points, unit=" میلیون", x_decimals=0, label_every=6,
         color="var(--chart-3)",
         title="توزیع قیمت هر مترمربع (میلیون تومان)")
 

@@ -124,6 +124,45 @@ def _label(value: float, unit: str, *, decimals: int = 0) -> str:
     return f"{text}{unit}" if unit else text
 
 
+def _char_width(char: str) -> float:
+    """پهنای تقریبی یک نویسه در واحد viewBox (اندازهٔ قلم ۱۱ تا ۱۲)."""
+    code = ord(char)
+    if 0x06F0 <= code <= 0x06F9 or 0x0660 <= code <= 0x0669:
+        return 6.0                      # ارقام فارسی و عربی
+    if char.isdigit():
+        return 6.1
+    if char in "٬,٫.":
+        return 3.0                      # جداکننده‌های هزارگان و اعشار
+    if char == "٪":
+        return 7.5
+    if char == " ":
+        return 3.5
+    return 6.4 if code < 128 else 6.6   # لاتین / فارسی
+
+
+def _text_width(text: str) -> float:
+    """تخمین پهنای رشته در واحد viewBox."""
+    return sum(_char_width(char) for char in text)
+
+
+def _value_gutter(labels: list[str], *, minimum: int = 46,
+                  maximum: int = 132) -> int:
+    """حاشیهٔ سمت چپ نمودار برای برچسب‌های محور مقدار.
+
+    این عدد از پهن‌ترین برچسبی که واقعاً نوشته می‌شود حساب می‌شود، نه از یک
+    حدس ثابت. دلیلش یک باگ واقعی است: پیش‌تر برچسب‌ها با لنگر آینه‌شده به سمت
+    داخل نمودار می‌رفتند و خطوط راهنما از روی متن عبور می‌کردند (برچسبی مثل
+    «۱۰٫۰ میلیارد» از x=۱۲ تا x=۷۰ می‌رسید، در حالی که ناحیهٔ رسم از ۱۸ شروع
+    می‌شد).
+
+    تخمین عمداً **دست‌بالا** است: زیادیِ حاشیه فقط چند واحد فضای خالی است، ولی
+    کم‌آوردنش همان هم‌پوشانی را برمی‌گرداند. ``maximum`` جلوی بلعیدن نمودار
+    توسط یک برچسب غیرمنتظره را می‌گیرد.
+    """
+    widest = max((_text_width(text) for text in labels), default=0.0)
+    return int(min(maximum, max(minimum, widest + 14)))
+
+
 # ------------------------------------------------------------------ میله‌ای افقی
 def horizontal_bars(bars: list[Bar], *, width: int = DEFAULT_WIDTH,
                     row_height: int = 34, label_width: int = 168,
@@ -149,8 +188,17 @@ def horizontal_bars(bars: list[Bar], *, width: int = DEFAULT_WIDTH,
     pad_top = 30
     pad_bottom = 26
     height = pad_top + row_height * len(rows) + pad_bottom
-    #: جای عدد سر میله — بلندترین میله هم باید جا برای عددش داشته باشد.
-    value_gutter = 48
+    #: جای عدد سر میله. از پهن‌ترین عدد قابل‌نوشتن حساب می‌شود، به‌علاوهٔ نصف
+    #: پهن‌ترین برچسب محور افقی — چون نخستین خط راهنما که برچسبش وسط‌چین
+    #: می‌نشیند، سمت چپ‌ترین نقطهٔ نمودار است و برچسب نباید از قاب بیرون بزند.
+    displays = [bar.display or _label(bar.value, unit, decimals=decimals)
+                for bar in rows]
+    tick_texts = [_label(value, unit, decimals=decimals) for value in ticks]
+    value_gutter = max(
+        48,
+        int(max((_text_width(text) for text in displays), default=0.0) + 14),
+        int(max((_text_width(text) for text in tick_texts), default=0.0) / 2 + 10),
+    )
     plot_left = 14 + value_gutter
     plot_right = width - label_width
 
@@ -212,7 +260,11 @@ def columns(bars: list[Bar], *, width: int = DEFAULT_WIDTH,
     axis = max(max(ticks), top)
     pad_top = 30
     pad_bottom = 56 if rotate_labels else 38
-    pad_side = 62
+    #: حاشیهٔ برچسب محور مقدار از پهن‌ترین برچسب حساب می‌شود تا متن هرگز
+    #: وارد ناحیهٔ رسم نشود و خطوط راهنما از رویش عبور نکند.
+    gutter = _value_gutter(
+        [_label(value, unit, decimals=decimals) for value in ticks])
+    pad_side = gutter + 8
     plot_bottom = height - pad_bottom
     span = plot_bottom - pad_top
 
@@ -220,12 +272,12 @@ def columns(bars: list[Bar], *, width: int = DEFAULT_WIDTH,
     for value in ticks:
         y = plot_bottom - (value / axis) * span
         frame.add(
-            f'<line x1="{pad_side - 44}" y1="{y:.1f}" x2="{width - 8}" '
+            f'<line x1="{gutter}" y1="{y:.1f}" x2="{width - 8}" '
             f'y2="{y:.1f}" stroke="var(--chart-grid)" stroke-width="1"/>'
         )
         frame.add(
-            f'<text x="{pad_side - 50}" y="{y + 4:.1f}" '
-            f'text-anchor="{ANCHOR_LEFT}" class="chart-tick">'
+            f'<text x="{gutter - 8}" y="{y + 4:.1f}" '
+            f'text-anchor="{ANCHOR_RIGHT}" class="chart-tick">'
             f"{_esc(_label(value, unit, decimals=decimals))}</text>"
         )
 
@@ -264,7 +316,7 @@ def columns(bars: list[Bar], *, width: int = DEFAULT_WIDTH,
             f"{_esc(bar.label)}</text>"
         )
     frame.add(
-        f'<line x1="{pad_side - 44}" y1="{plot_bottom:.1f}" x2="{width - 8}" '
+        f'<line x1="{gutter}" y1="{plot_bottom:.1f}" x2="{width - 8}" '
         f'y2="{plot_bottom:.1f}" stroke="var(--chart-axis)" stroke-width="1"/>'
     )
     return frame.render()
@@ -284,7 +336,9 @@ def grouped_bars(categories: list[str], series: list[tuple[str, list[float], str
     axis = max(max(ticks), top)
     pad_top = 16
     pad_bottom = 46
-    pad_side = 64
+    gutter = _value_gutter(
+        [_label(value, unit, decimals=decimals) for value in ticks])
+    pad_side = gutter + 8
     plot_bottom = height - pad_bottom
     span = plot_bottom - pad_top
 
@@ -292,12 +346,12 @@ def grouped_bars(categories: list[str], series: list[tuple[str, list[float], str
     for value in ticks:
         y = plot_bottom - (value / axis) * span
         frame.add(
-            f'<line x1="{pad_side - 46}" y1="{y:.1f}" x2="{width - 8}" y2="{y:.1f}" '
+            f'<line x1="{gutter}" y1="{y:.1f}" x2="{width - 8}" y2="{y:.1f}" '
             f'stroke="var(--chart-grid)" stroke-width="1"/>'
         )
         frame.add(
-            f'<text x="{pad_side - 52}" y="{y + 4:.1f}" '
-            f'text-anchor="{ANCHOR_LEFT}" class="chart-tick">'
+            f'<text x="{gutter - 8}" y="{y + 4:.1f}" '
+            f'text-anchor="{ANCHOR_RIGHT}" class="chart-tick">'
             f"{_esc(_label(value, unit, decimals=decimals))}</text>"
         )
 
@@ -330,7 +384,7 @@ def grouped_bars(categories: list[str], series: list[tuple[str, list[float], str
         )
 
     frame.add(
-        f'<line x1="{pad_side - 46}" y1="{plot_bottom:.1f}" x2="{width - 8}" '
+        f'<line x1="{gutter}" y1="{plot_bottom:.1f}" x2="{width - 8}" '
         f'y2="{plot_bottom:.1f}" stroke="var(--chart-axis)" stroke-width="1"/>'
     )
     return frame.render()
@@ -362,10 +416,11 @@ def histogram(points: list[tuple[float, int]], *, width: int = DEFAULT_WIDTH,
     axis = max(max(ticks), float(top))
     pad_top = 16
     pad_bottom = 34
-    pad_side = 56
+    #: میله‌ها کل ناحیهٔ رسم را پر می‌کنند، پس برچسب محور مقدار حتماً باید
+    #: کامل بیرون از آن بنشیند؛ وگرنه روی نخستین سطل می‌افتد.
+    plot_left = _value_gutter([fa_number(value) for value in ticks])
     plot_bottom = height - pad_bottom
     span = plot_bottom - pad_top
-    plot_left = pad_side - 38
     plot_width = width - plot_left - 8
 
     frame = Frame(width=width, height=height, title=title)
@@ -376,8 +431,8 @@ def histogram(points: list[tuple[float, int]], *, width: int = DEFAULT_WIDTH,
             f'stroke="var(--chart-grid)" stroke-width="1"/>'
         )
         frame.add(
-            f'<text x="{pad_side - 44}" y="{y + 4:.1f}" '
-            f'text-anchor="{ANCHOR_LEFT}" class="chart-tick">'
+            f'<text x="{plot_left - 8}" y="{y + 4:.1f}" '
+            f'text-anchor="{ANCHOR_RIGHT}" class="chart-tick">'
             f"{_esc(fa_number(value))}</text>"
         )
 

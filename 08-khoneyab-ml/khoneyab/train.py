@@ -18,11 +18,13 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import time
 
 import joblib
 import numpy as np
 import pandas as pd
+import sklearn
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import (HistGradientBoostingRegressor,
                               RandomForestRegressor)
@@ -225,6 +227,13 @@ def train_all(df: pd.DataFrame | None = None, *, cv_folds: int = CV_FOLDS) -> di
         "metrics": metrics,
         "interval_factor": metrics["interval"]["calibration_factor"],
         "version": 2,
+        #: نسخهٔ scikit-learn بخشی از قرارداد این فایل است، نه یک جزئیات
+        #: محیطی. ``joblib`` نام کلاس‌های scikit-learn را داخل فایل ذخیره
+        #: می‌کند و بین دو نسخه حتی کلاس‌های خصوصی عوض می‌شوند؛ آن‌وقت
+        #: بارگذاری با ``AttributeError`` می‌شکند و صفحهٔ برآورد خطای ۵۰۰
+        #: می‌دهد. با ثبت نسخه اینجا، ناسازگاری پیش از تلاش برای بازکردن
+        #: فایل تشخیص داده می‌شود و بسته از نو ساخته می‌شود.
+        "sklearn_version": sklearn.__version__,
     }, bundle_path())
 
     # فایل مدل قدیمی حذف می‌شود تا دو مسیر موازی برای بارگذاری نماند.
@@ -239,10 +248,48 @@ def train_all(df: pd.DataFrame | None = None, *, cv_folds: int = CV_FOLDS) -> di
     return metrics
 
 
+def _discard_bundle(reason: str) -> None:
+    """بستهٔ بی‌استفاده دور ریخته می‌شود و دلیلش روی stderr ثبت می‌شود.
+
+    حذف عمدی است: اگر فایل بماند، هر فرایند تازه دوباره همان خطا را
+    می‌بیند و هر بار هزینهٔ یک تلاش ناموفق پرداخت می‌شود.
+    """
+    print(f"[khoneyab] بستهٔ مدل دور ریخته شد — {reason}", file=sys.stderr)
+    try:
+        os.remove(bundle_path())
+    except OSError:
+        pass
+
+
 def load_bundle() -> dict:
-    """بارگذاری بستهٔ مدل؛ در نبود آن، آموزش می‌دهد."""
-    if not os.path.exists(bundle_path()):
-        train_all()
+    """بارگذاری بستهٔ مدل؛ اگر نبود یا قابل خواندن نبود، دوباره آموزش می‌دهد.
+
+    «وجود فایل» شرط کافی نیست. دو حالت واقعی که اینجا پوشش داده می‌شود:
+
+    ۱) بسته با نسخهٔ دیگری از ``scikit-learn`` ساخته شده باشد — بارگذاری
+       شکست می‌خورد.
+
+    ۲) بسته ناقص یا خراب نوشته شده باشد (مثلاً نوشتن نیمه‌کاره)، که همان
+       خطا را می‌دهد ولی دلیلش فرق دارد.
+
+    در هر دو حالت بستهٔ ناسازگار کنار گذاشته می‌شود و مدل از نو ساخته
+    می‌شود، چون خطای ۵۰۰ روی صفحهٔ برآورد به‌مراتب بدتر از یک بار آموزش
+    دوباره است.
+    """
+    path = bundle_path()
+    if os.path.exists(path):
+        try:
+            bundle = joblib.load(path)
+        except Exception as error:          # noqa: BLE001 — هر شکستی خودترمیم است
+            _discard_bundle(f"بارگذاری ناموفق ({type(error).__name__})")
+        else:
+            built_with = bundle.get("sklearn_version")
+            if built_with == sklearn.__version__:
+                return bundle
+            _discard_bundle(
+                f"نسخهٔ scikit-learn عوض شده: {built_with} → {sklearn.__version__}"
+                if built_with else "نسخهٔ scikit-learn در بسته ثبت نشده")
+    train_all()
     return joblib.load(bundle_path())
 
 

@@ -5,9 +5,11 @@ from __future__ import annotations
 import json
 import os
 
+import joblib
 import numpy as np
 import pandas as pd
 import pytest
+import sklearn
 
 from khoneyab.config import FEATURES
 from khoneyab.train import (INTERVAL_COVERAGE, evaluate, features_frame,
@@ -124,6 +126,58 @@ def test_evaluate_reports_known_values():
     assert metrics["r2"] == 1.0
     assert metrics["mape_pct"] == 0.0
     assert metrics["mae_toman"] == 0
+
+
+def test_bundle_records_the_sklearn_version(env):
+    """نسخهٔ scikit-learn باید داخل بسته ثبت شود.
+
+    ``joblib`` نام کلاس‌های scikit-learn را در فایل ذخیره می‌کند و بین دو
+    نسخه حتی کلاس‌های خصوصی عوض می‌شوند. بارگذاری چنین بسته‌ای با
+    ``AttributeError`` می‌شکند و هر صفحهٔ برآورد خطای ۵۰۰ می‌دهد. ثبت نسخه
+    اجازه می‌دهد ناسازگاری *پیش از* تلاش برای بازکردن فایل تشخیص داده شود.
+    """
+    assert joblib.load(env["bundle_path"]).get("sklearn_version") == sklearn.__version__
+
+
+def test_load_bundle_rebuilds_a_bundle_from_another_version(env, monkeypatch):
+    """بستهٔ ساخته‌شده با نسخهٔ دیگر باید کنار گذاشته و از نو ساخته شود."""
+    train = env["train"]
+    path = env["bundle_path"]
+    good = joblib.load(path)
+
+    stale = dict(good)
+    stale["sklearn_version"] = "0.0.1"
+    joblib.dump(stale, path)
+
+    rebuilt = []
+
+    def fake_train_all(*args, **kwargs):
+        rebuilt.append(True)
+        joblib.dump(good, path)          # محیط آزمون به حالت اول برمی‌گردد
+        return good["metrics"]
+
+    monkeypatch.setattr(train, "train_all", fake_train_all)
+    loaded = train.load_bundle()
+    assert rebuilt, "بستهٔ ناسازگار دوباره ساخته نشد"
+    assert loaded["sklearn_version"] == sklearn.__version__
+
+
+def test_load_bundle_recovers_from_an_unreadable_file(env, monkeypatch):
+    """فایل خراب نباید صفحهٔ برآورد را با خطای ۵۰۰ بشکند."""
+    train = env["train"]
+    path = env["bundle_path"]
+    good = joblib.load(path)
+
+    with open(path, "wb") as handle:
+        handle.write(b"\x00\x01 not a joblib file")
+
+    def fake_train_all(*args, **kwargs):
+        joblib.dump(good, path)
+        return good["metrics"]
+
+    monkeypatch.setattr(train, "train_all", fake_train_all)
+    loaded = train.load_bundle()
+    assert loaded["metrics"]["best_model"] == good["metrics"]["best_model"]
 
 
 def test_training_is_stable_across_runs(env):
