@@ -133,3 +133,71 @@ def test_rendered_charts_have_no_latin_digits(rendered_pages):
         for svg in svgs:
             text = " ".join(re.findall(r">([^<]+)<", svg))
             assert not re.search(r"[0-9]", text), f"{path}: رقم لاتین در نمودار"
+
+
+# ------------------------------------------------------------ هندسهٔ نمودار
+def _viewbox(svg: str) -> tuple[float, float]:
+    parts = re.search(r'viewBox="([^"]+)"', svg).group(1).split()
+    return float(parts[2]), float(parts[3])
+
+
+def _escaping_rects(svg: str, tolerance: float = 0.5) -> list[str]:
+    """میله‌هایی که از قاب نمودار بیرون زده‌اند."""
+    width, height = _viewbox(svg)
+    escaped = []
+    for rect in _rects(svg):
+        x, y, w, h = (float(re.search(rf'{name}="(-?[\d.]+)"', rect).group(1))
+                      for name in ("x", "y", "width", "height"))
+        if (x < -tolerance or y < -tolerance
+                or x + w > width + tolerance or y + h > height + tolerance):
+            escaped.append(rect)
+    return escaped
+
+
+@pytest.mark.parametrize("top", [0.4, 1.0, 7.3, 48.7, 90.0, 121.0, 234.0, 999.0, 1234.5])
+def test_axis_never_falls_below_the_largest_value(top):
+    """خط آخر محور باید از بزرگ‌ترین مقدار داده کوچک‌تر نباشد.
+
+    اگر کوچک‌تر باشد، بلندی میله از بلندی محور بیشتر می‌شود و میله با ``x``
+    یا ``y`` منفی از قاب بیرون می‌زند. این دقیقاً همان شکستی بود که در نمودار
+    اهمیت ویژگی و سطل‌های متراژ دیده می‌شد.
+    """
+    assert max(charts._ticks(top)) >= top
+
+
+@pytest.mark.parametrize("top", [0.4, 7.3, 48.7, 90.0, 121.0, 234.0, 999.0])
+def test_bars_stay_inside_the_canvas(top):
+    """هیچ میله‌ای نباید از viewBox بیرون بزند — نه افقی، نه ستونی."""
+    bars = [charts.Bar(label=f"گ{index}", value=top * share)
+            for index, share in enumerate((1.0, 0.6, 0.05, 0.001))]
+    assert _escaping_rects(charts.horizontal_bars(bars)) == []
+    assert _escaping_rects(charts.columns(bars)) == []
+    assert _escaping_rects(charts.grouped_bars(
+        ["الف", "ب"],
+        [("یک", [top, top * 0.4], "var(--chart-soft)"),
+         ("دو", [top * 0.9, top], "var(--chart-1)")],
+    )) == []
+
+
+def test_rendered_page_charts_stay_inside_their_canvas(rendered_pages):
+    """همین قاعده روی نمودارهای واقعیِ صفحه‌ها هم باید برقرار باشد."""
+    for path, svgs in rendered_pages.items():
+        for svg in svgs:
+            assert _escaping_rects(svg) == [], f"{path}: میله از قاب بیرون زده"
+
+
+def test_horizontal_bars_write_the_value_outside_the_bar():
+    """عدد هر میله بیرون سر آن می‌نشیند، نه روی رنگ تیرهٔ میله."""
+    svg = charts.horizontal_bars([charts.Bar(label="الف", value=100,
+                                             display="۱۰۰")], width=400,
+                                 label_width=100)
+    bar = next(r for r in _rects(svg) if 'height="20"' in r)
+    x = _x(bar)
+    value = re.search(r'<text x="([\d.]+)"[^>]*class="chart-value"', svg)
+    assert value is not None, "عدد روی میله نوشته نشده"
+    assert float(value.group(1)) <= x, "عدد روی میله افتاده است"
+
+
+def test_columns_write_the_value_above_the_bar():
+    svg = charts.columns([charts.Bar(label="الف", value=100, display="۱۰۰")])
+    assert 'class="chart-value">۱۰۰' in svg

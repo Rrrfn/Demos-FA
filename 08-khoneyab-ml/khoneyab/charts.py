@@ -31,6 +31,20 @@ from .labels import fa_number, fa_percent
 DEFAULT_WIDTH = 720
 DEFAULT_HEIGHT = 320
 
+#: لنگر متن — با توجه به راست‌به‌چپ بودن سند.
+#:
+#: بوم SVG داخل یک صفحهٔ ``dir="rtl"`` می‌نشیند و در نتیجه ``direction: rtl``
+#: را از ارث می‌برد. در این حالت معنای ``text-anchor`` **آینه** می‌شود:
+#: ``start`` متن را به سمت چپ لنگر می‌برد و ``end`` به سمت راست. اگر با ذهنیت
+#: چپ‌به‌راست ``end`` بنویسیم، متن از قاب نمودار بیرون می‌زند.
+#:
+#: این ثابت‌ها همان چیزی را می‌گویند که منظورمان است — لبهٔ متن روی کدام سمت
+#: لنگر بنشیند — تا هر بار لازم نباشد این آینه‌شدن دستی حساب شود. ترتیب
+#: حروف فارسی در هر دو حالت درست می‌ماند؛ تنها جای متن جابه‌جا می‌شود.
+ANCHOR_RIGHT = "start"    # لبهٔ راست متن روی لنگر — متن به چپ می‌رود
+ANCHOR_LEFT = "end"      # لبهٔ چپ متن روی لنگر — متن به راست می‌رود
+ANCHOR_CENTER = "middle"  # وسط متن روی لنگر — مستقل از جهت
+
 
 @dataclass(frozen=True)
 class Bar:
@@ -61,8 +75,11 @@ class Frame:
         label = self.title or self.description
         aria = (f'role="img" aria-label="{_esc(label)}"' if label
                 else 'role="presentation" aria-hidden="true"')
+        # جهت متن صریح نوشته می‌شود تا این رفتار به CSS یا صاحب‌صفحه وابسته
+        # نباشد؛ نمودار بیرون از این پروژه هم باید همان شکلی بماند که اینجا
+        # طراحی شده.
         head = (f'<svg class="chart" viewBox="0 0 {self.width} {self.height}" '
-                f'preserveAspectRatio="xMidYMid meet" {aria}>')
+                f'direction="rtl" preserveAspectRatio="xMidYMid meet" {aria}>')
         if self.title:
             head += f"<title>{_esc(self.title)}</title>"
         if self.description:
@@ -76,18 +93,29 @@ def _esc(text: object) -> str:
 
 
 def _ticks(top: float, count: int = 4) -> list[float]:
-    """خطوط راهنمای محور مقدار — عددهای گرد و خوانا."""
+    """خطوط راهنمای محور مقدار — عددهای گرد و خوانا.
+
+    **قاعدهٔ حیاتی:** آخرین خط راهنما هرگز نباید از بزرگ‌ترین مقدار داده
+    کوچک‌تر باشد. اگر باشد، عرض میله از بلندی محور بیشتر می‌شود و میله از
+    قاب نمودار بیرون می‌زند (منفی شدن ``x`` یا ``y``). پس شمار خطوط تا
+    پوشش کامل داده ادامه می‌یابد، حتی اگر از ``count`` بگذرد.
+    """
     if top <= 0:
         return [0.0]
-    step = top / count
-    magnitude = 10 ** math.floor(math.log10(step)) if step > 0 else 1
+    rough = top / count
+    magnitude = 10 ** math.floor(math.log10(rough)) if rough > 0 else 1
+    step = magnitude * 10
     for factor in (1, 2, 2.5, 5, 10):
         candidate = magnitude * factor
-        if candidate >= step:
+        if candidate >= rough:
             step = candidate
             break
-    values = [step * index for index in range(count + 1)]
-    return [value for value in values if value <= top * 1.0001] or [top]
+    # سقف محور از گردکردن *رو به بالا* می‌آید، پس همیشه از بزرگ‌ترین مقدار
+    # داده کوچک‌تر نیست — و در ضمن بیهوده هم باز نمی‌ماند. اگر شمار خطوط را
+    # از پیش ثابت بگیریم، برای بیشینه‌ای مثل ۲۳۴ محور تا ۴۰۰ می‌رود و بلندترین
+    # میله فقط ۵۸٪ پهنا را پر می‌کند.
+    axis = math.ceil(top / step) * step
+    return [index * step for index in range(int(round(axis / step)) + 1)]
 
 
 def _label(value: float, unit: str, *, decimals: int = 0) -> str:
@@ -105,6 +133,11 @@ def horizontal_bars(bars: list[Bar], *, width: int = DEFAULT_WIDTH,
     """نمودار میله‌ای افقی — برچسب راست، میله به سمت چپ.
 
     مناسب برای مقایسهٔ مناطق یا ویژگی‌ها، جایی که برچسب‌ها متنی‌اند.
+
+    عدد هر میله *بیرون* سر آن می‌نشیند، نه روی آن. دلیلش فقط زیبایی نیست:
+    رنگ میله‌ها تیره است و متن تیره روی آن خوانده نمی‌شود؛ علاوه بر آن،
+    عددِ درون میله در میله‌های کوتاه جای نمی‌گیرد و به ستون برچسب می‌چسبد.
+    به همین دلیل یک حاشیهٔ کوچک در سمت چپ محور کنار گذاشته می‌شود.
     """
     rows = [bar for bar in bars if bar.value is not None]
     if not rows:
@@ -112,11 +145,13 @@ def horizontal_bars(bars: list[Bar], *, width: int = DEFAULT_WIDTH,
 
     top = max(bar.value for bar in rows) or 1.0
     ticks = _ticks(top)
-    axis = max(ticks)
+    axis = max(max(ticks), top)
     pad_top = 30
     pad_bottom = 26
     height = pad_top + row_height * len(rows) + pad_bottom
-    plot_left = 16
+    #: جای عدد سر میله — بلندترین میله هم باید جا برای عددش داشته باشد.
+    value_gutter = 48
+    plot_left = 14 + value_gutter
     plot_right = width - label_width
 
     frame = Frame(width=width, height=height, title=title or value_header)
@@ -132,7 +167,7 @@ def horizontal_bars(bars: list[Bar], *, width: int = DEFAULT_WIDTH,
         )
         frame.add(
             f'<text x="{x:.1f}" y="{height - pad_bottom + 20}" '
-            f'text-anchor="middle" class="chart-tick">'
+            f'text-anchor="{ANCHOR_CENTER}" class="chart-tick">'
             f"{_esc(_label(value, unit, decimals=decimals))}</text>"
         )
 
@@ -147,9 +182,10 @@ def horizontal_bars(bars: list[Bar], *, width: int = DEFAULT_WIDTH,
             f'<rect x="{x:.1f}" y="{y + 6:.1f}" width="{bar_span:.1f}" '
             f'height="{row_height - 14}" rx="3" fill="{fill}"/>'
             f'<text x="{width - 8}" y="{y + row_height / 2 + 5:.1f}" '
-            f'text-anchor="end" class="chart-label">{_esc(bar.label)}</text>'
-            f'<text x="{plot_right - 8}" y="{y + row_height / 2 + 5:.1f}" '
-            f'text-anchor="end" class="chart-value">'
+            f'text-anchor="{ANCHOR_RIGHT}" class="chart-label">'
+            f"{_esc(bar.label)}</text>"
+            f'<text x="{x - 8:.1f}" y="{y + row_height / 2 + 5:.1f}" '
+            f'text-anchor="{ANCHOR_RIGHT}" class="chart-value">'
             f"{_esc(bar.display or _label(bar.value, unit, decimals=decimals))}"
             f"</text></g>"
         )
@@ -160,16 +196,21 @@ def horizontal_bars(bars: list[Bar], *, width: int = DEFAULT_WIDTH,
 def columns(bars: list[Bar], *, width: int = DEFAULT_WIDTH,
             height: int = DEFAULT_HEIGHT, unit: str = "",
             decimals: int = 0, color: str = "var(--chart-1)",
-            title: str = "", rotate_labels: bool = False) -> str:
-    """نمودار ستونی — دسته‌ها از راست به چپ چیده می‌شوند."""
+            title: str = "", rotate_labels: bool = False,
+            show_values: bool = True) -> str:
+    """نمودار ستونی — دسته‌ها از راست به چپ چیده می‌شوند.
+
+    عدد هر ستون بالای آن می‌نشیند. حاشیهٔ بالای نمودار عمداً باز است تا
+    بلندترین ستون هم جای عددش را داشته باشد و عدد از قاب بیرون نزند.
+    """
     rows = [bar for bar in bars if bar.value is not None]
     if not rows:
         return ""
 
     top = max(bar.value for bar in rows) or 1.0
     ticks = _ticks(top)
-    axis = max(ticks)
-    pad_top = 16
+    axis = max(max(ticks), top)
+    pad_top = 30
     pad_bottom = 56 if rotate_labels else 38
     pad_side = 62
     plot_bottom = height - pad_bottom
@@ -183,8 +224,9 @@ def columns(bars: list[Bar], *, width: int = DEFAULT_WIDTH,
             f'y2="{y:.1f}" stroke="var(--chart-grid)" stroke-width="1"/>'
         )
         frame.add(
-            f'<text x="{pad_side - 50}" y="{y + 4:.1f}" text-anchor="end" '
-            f'class="chart-tick">{_esc(_label(value, unit, decimals=decimals))}</text>'
+            f'<text x="{pad_side - 50}" y="{y + 4:.1f}" '
+            f'text-anchor="{ANCHOR_LEFT}" class="chart-tick">'
+            f"{_esc(_label(value, unit, decimals=decimals))}</text>"
         )
 
     slot = (width - pad_side - 8) / len(rows)
@@ -205,9 +247,17 @@ def columns(bars: list[Bar], *, width: int = DEFAULT_WIDTH,
                 f'width="{bar_width:.1f}" height="{bar_height:.1f}" rx="3" '
                 f'fill="{bar.color or color}"/></g>'
             )
-        transform = (f' transform="rotate(-40 {center:.1f} {plot_bottom + 18:.1f})"'
+        # عدد بالای ستون. در عرض‌های تنگ حذف می‌شود تا عددها به هم نچسبند.
+        if show_values and slot >= 34:
+            frame.add(
+                f'<text x="{center:.1f}" y="{y - 7:.1f}" '
+                f'text-anchor="{ANCHOR_CENTER}" class="chart-value">'
+                f"{_esc(bar.display or _label(bar.value, unit, decimals=decimals))}"
+                f"</text>"
+            )
+        transform = (f' transform="rotate(40 {center:.1f} {plot_bottom + 18:.1f})"'
                      if rotate_labels else "")
-        anchor = "end" if rotate_labels else "middle"
+        anchor = ANCHOR_RIGHT if rotate_labels else ANCHOR_CENTER
         frame.add(
             f'<text x="{center:.1f}" y="{plot_bottom + (18 if rotate_labels else 22):.1f}" '
             f'text-anchor="{anchor}"{transform} class="chart-label">'
@@ -231,7 +281,7 @@ def grouped_bars(categories: list[str], series: list[tuple[str, list[float], str
 
     top = max((value for _, values, _ in series for value in values), default=0.0) or 1.0
     ticks = _ticks(top)
-    axis = max(ticks)
+    axis = max(max(ticks), top)
     pad_top = 16
     pad_bottom = 46
     pad_side = 64
@@ -246,8 +296,9 @@ def grouped_bars(categories: list[str], series: list[tuple[str, list[float], str
             f'stroke="var(--chart-grid)" stroke-width="1"/>'
         )
         frame.add(
-            f'<text x="{pad_side - 52}" y="{y + 4:.1f}" text-anchor="end" '
-            f'class="chart-tick">{_esc(_label(value, unit, decimals=decimals))}</text>'
+            f'<text x="{pad_side - 52}" y="{y + 4:.1f}" '
+            f'text-anchor="{ANCHOR_LEFT}" class="chart-tick">'
+            f"{_esc(_label(value, unit, decimals=decimals))}</text>"
         )
 
     slot = (width - pad_side - 8) / len(categories)
@@ -274,7 +325,8 @@ def grouped_bars(categories: list[str], series: list[tuple[str, list[float], str
             )
         frame.add(
             f'<text x="{group_center:.1f}" y="{plot_bottom + 22:.1f}" '
-            f'text-anchor="middle" class="chart-label">{_esc(category)}</text>'
+            f'text-anchor="{ANCHOR_CENTER}" class="chart-label">'
+            f"{_esc(category)}</text>"
         )
 
     frame.add(
@@ -307,7 +359,7 @@ def histogram(points: list[tuple[float, int]], *, width: int = DEFAULT_WIDTH,
 
     top = max(value for _, value in rows) or 1
     ticks = _ticks(float(top))
-    axis = max(ticks)
+    axis = max(max(ticks), float(top))
     pad_top = 16
     pad_bottom = 34
     pad_side = 56
@@ -324,8 +376,9 @@ def histogram(points: list[tuple[float, int]], *, width: int = DEFAULT_WIDTH,
             f'stroke="var(--chart-grid)" stroke-width="1"/>'
         )
         frame.add(
-            f'<text x="{pad_side - 44}" y="{y + 4:.1f}" text-anchor="end" '
-            f'class="chart-tick">{_esc(fa_number(value))}</text>'
+            f'<text x="{pad_side - 44}" y="{y + 4:.1f}" '
+            f'text-anchor="{ANCHOR_LEFT}" class="chart-tick">'
+            f"{_esc(fa_number(value))}</text>"
         )
 
     slot = plot_width / len(rows)
@@ -342,7 +395,7 @@ def histogram(points: list[tuple[float, int]], *, width: int = DEFAULT_WIDTH,
         if index % max(1, label_every) == 0:
             frame.add(
                 f'<text x="{x + slot / 2:.1f}" y="{plot_bottom + 20:.1f}" '
-                f'text-anchor="middle" class="chart-tick">'
+                f'text-anchor="{ANCHOR_CENTER}" class="chart-tick">'
                 f"{_esc(_label(x_value, unit, decimals=x_decimals))}</text>"
             )
     frame.add(

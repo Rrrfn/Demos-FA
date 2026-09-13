@@ -241,7 +241,7 @@ def bedrooms_chart() -> str:
                  f"({fa_number(row['count'])} آگهی)",
             display=fa_number(row["median_price"] / 1e9, decimals=1),
         ) for _, row in frame.iterrows()],
-        unit=" م.د", decimals=1, title="میانهٔ قیمت به تفکیک تعداد اتاق")
+        unit=" میلیارد", decimals=1, title="میانهٔ قیمت به تفکیک تعداد اتاق")
 
 
 def importance_chart(limit: int = 8) -> str:
@@ -305,7 +305,7 @@ def compare_chart(items: list[Listing], prices: list[int]) -> tuple[str, str]:
             ("قیمت آگهی", [item.price / 1e9 for item in items], "var(--chart-soft)"),
             ("ارزش برآوردی", [value / 1e9 for value in prices], "var(--chart-1)"),
         ],
-        unit=" م.د", decimals=1, title="قیمت آگهی در برابر ارزش برآوردی")
+        unit=" میلیارد", decimals=1, title="قیمت آگهی در برابر ارزش برآوردی")
     return meters, grouped
 
 

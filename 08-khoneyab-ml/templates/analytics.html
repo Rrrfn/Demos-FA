@@ -30,8 +30,8 @@
     {{ ui.section_head('پراکندگی', 'گران‌ترین و ارزان‌ترین مناطق',
         'میانهٔ قیمت هر مترمربع، به تفکیک منطقهٔ شهرداری.') }}
     <div class="split">
-      <div>{{ ui.chart_block(expensive_chart) }}</div>
-      <div>{{ ui.chart_block(affordable_chart) }}</div>
+      <div>{{ ui.chart_block(expensive_chart, 'شش منطقهٔ گران‌ترین کاتالوگ.') }}</div>
+      <div>{{ ui.chart_block(affordable_chart, 'شش منطقهٔ ارزان‌ترین کاتالوگ.') }}</div>
     </div>
   </section>
 
@@ -46,10 +46,10 @@
 
   <section>
     {{ ui.section_head('رابطه‌ها', 'متراژ و تعداد اتاق چقدر قیمت را جابه‌جا می‌کنند',
-        'میانهٔ قیمت در هر گروه — نه میانگین، که با چند ملک گران کج می‌شود.') }}
+        'در هر دو نمودار میانه را می‌بینید، نه میانگین را — که با چند ملک گران کج می‌شود.') }}
     <div class="split">
-      <div>{{ ui.chart_block(area_chart) }}</div>
-      <div>{{ ui.chart_block(bedrooms_chart) }}</div>
+      <div>{{ ui.chart_block(area_chart, 'میانهٔ قیمت هر مترمربع در هر سطل متراژ.') }}</div>
+      <div>{{ ui.chart_block(bedrooms_chart, 'میانهٔ قیمت کل ملک، به تفکیک تعداد اتاق خواب.') }}</div>
     </div>
   </section>
 
@@ -91,7 +91,7 @@
     {{ ui.section_head('مدل', 'چه چیزی قیمت را تعیین می‌کند',
         'سهم هر ویژگی از اهمیت، با جایگشت روی دادهٔ آزمون اندازه‌گیری شده.') }}
     <div class="split">
-      <div>{{ ui.chart_block(importance_chart) }}</div>
+      <div>{{ ui.chart_block(importance_chart, 'افت دقت مدل وقتی مقدار هر ویژگی به‌هم می‌ریزد؛ اندازه‌گیری‌شده روی دادهٔ آزمون.') }}</div>
       <div>
         <div class="kpis">
           {{ ui.kpi('نوع مدل', insights.best_model, 'برندهٔ مقایسه') }}
