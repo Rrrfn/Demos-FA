@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">گام ۲ از ۵</p>
+    <h1 class="page-title">بازرسی داده</h1>
+    <p class="page-lead">
+      پیش از هر تغییری، این چیزی است که در فایل شما هست. هیچ داده‌ای در این
+      گام عوض نشده است.
+    </p>
+  </div>
+  <div class="page-head__actions">
+    <a class="btn btn--primary" href="{{ url_for('pages.clean_page', dataset_id=meta.id) }}">
+      رفتن به پاک‌سازی
+    </a>
+  </div>
+</header>
+
+<section class="grid grid--4 stats">
+  <div class="stat">
+    <p class="stat__label">تعداد سطر</p>
+    <p class="stat__value">{{ view.profile.rows|fa }}</p>
+  </div>
+  <div class="stat">
+    <p class="stat__label">تعداد ستون</p>
+    <p class="stat__value">{{ view.profile.columns|fa }}</p>
+  </div>
+  <div class="stat">
+    <p class="stat__label">سلول خالی</p>
+    <p class="stat__value">{{ view.profile.missing|fa }}</p>
+    <p class="stat__hint">از {{ view.profile.cells|fa }} سلول</p>
+  </div>
+  <div class="stat">
+    <p class="stat__label">سطر تکراری</p>
+    <p class="stat__value">{{ view.profile.duplicates|fa }}</p>
+    <p class="stat__hint">
+      {% if view.profile.rows %}نسبت {{ (view.profile.duplicates / view.profile.rows)|fa_pct }}{% endif %}
+    </p>
+  </div>
+</section>
+
+<section class="panel panel--quality">
+  <div class="quality">
+    <div class="quality__score quality__score--{{ view.quality.band }}">
+      <p class="quality__number">{{ view.quality.score_text }}</p>
+      <p class="quality__label">از ۱۰۰ — {{ view.quality.label }}</p>
+    </div>
+    <div class="quality__parts">
+      {% for item in view.quality.parts %}
+        {{ ui.meter(item.label, item.value_text, item.value, item.detail,
+                    item.band, item.weight_text) }}
+      {% endfor %}
+    </div>
+  </div>
+  <details class="explain">
+    <summary>روش محاسبهٔ این امتیاز</summary>
+    <p>{{ view.quality.method }}</p>
+    <table class="table table--compact">
+      <thead><tr><th>برچسب</th><th>آستانه</th></tr></thead>
+      <tbody>
+        {% for band in view.quality.bands %}
+          <tr><td>{{ band.label }}</td><td>از {{ band.threshold }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </details>
+</section>
+
+{% if view.findings %}
+<section class="panel">
+  <h2 class="panel__title">مسائل پیداشده</h2>
+  <p class="panel__lead">
+    این فهرست تا زمانی که پاک‌سازی اجرا شود تازه است؛ در گام بعد می‌توانید
+    تعیین کنید کدام‌شان اصلاح شوند.
+  </p>
+  <ul class="findings">
+    {% for item in view.findings %}
+      <li class="finding finding--{{ item.severity }}">
+        <div class="finding__head">
+          <strong>{{ item.title }}</strong>
+          <span class="chip chip--count">{{ item.affected|fa }} مورد</span>
+        </div>
+        <p class="finding__detail">{{ item.detail }}</p>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<section class="panel">
+  <h2 class="panel__title">پروفایل ستون‌ها</h2>
+  <p class="panel__lead">
+    نوع هر ستون روی نمونه‌ای از داده تعیین می‌شود. «اعتبار» یعنی چند درصد
+    مقدارهای پرشده با همان نوع می‌خوانند.
+  </p>
+  {{ ui.role_pills(view.roles) }}
+  <div class="grid grid--2 columns">
+    {% for column in view.columns %}
+      <article class="column-card">
+        <div class="column-card__head">
+          <div>
+            <h3 class="column-card__name">{{ column.name }}</h3>
+            <p class="column-card__meta">
+              <span class="chip">{{ column.type_label }}</span>
+              <span class="chip chip--muted">{{ column.role_label }}</span>
+            </p>
+          </div>
+          <div class="column-card__validity
+                      {{ 'is-warn' if column.validity < 0.95 else '' }}">
+            <span class="column-card__validity-value">{{ column.validity_text }}</span>
+            <span class="column-card__validity-label">اعتبار</span>
+          </div>
+        </div>
+        <div class="column-card__stats">
+          <span>پرشده: {{ column.filled|fa }}</span>
+          <span>خالی: {{ column.missing_text }}</span>
+          <span>یکتا: {{ column.unique_text }}</span>
+          <span>قالب‌های نمایش: {{ column.formats|fa }}</span>
+        </div>
+        {% if column.summary %}
+          <p class="column-card__summary">{{ column.summary }}</p>
+        {% endif %}
+        {% if column.suspicious %}
+          <ul class="column-card__flags">
+            {% for item in column.suspicious %}
+              <li>
+                <span class="flag">{{ item.count|fa }} مورد</span>
+                {{ item.reason }}
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="panel">
+  <h2 class="panel__title">پیش‌نمایش جدول</h2>
+  {{ ui.preview(view.preview, 'دادهٔ خام، بدون هیچ تغییری') }}
+</section>
+{% endblock %}

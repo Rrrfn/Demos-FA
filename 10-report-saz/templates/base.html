@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }} — گزارش‌ساز</title>
+  <meta name="description" content="گزارش‌ساز — پلتفرم هوش داده و گزارش‌سازی خودکار از فایل اکسل و CSV">
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+  <link rel="preload" href="{{ url_for('static', filename='fonts/Vazirmatn-Regular.woff2') }}"
+        as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{{ url_for('static', filename='fonts/Vazirmatn-Bold.woff2') }}"
+        as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <style>
+    :root{
+      --primary:#0e7c66; --primary-dark:#0a5c4c; --accent:#14b8a6;
+      --ink:#17233b; --muted:#5b6b80; --line:#dfe6ee; --soft:#f0f9f7;
+      --warn:#c48c30; --danger:#c64a4a; --ok:#0e7c66;
+    }
+  </style>
+</head>
+<body>
+<a class="skip" href="#main">پرش به محتوای اصلی</a>
+
+<header class="topbar">
+  <div class="wrap topbar__inner">
+    <a class="brand" href="{{ url_for('pages.landing') }}">
+      <span class="brand__mark" aria-hidden="true">گ</span>
+      <span class="brand__text">
+        <strong>گزارش‌ساز</strong>
+        <small>هوش داده و گزارش‌سازی خودکار</small>
+      </span>
+    </a>
+    <nav class="nav" aria-label="ناوبری اصلی">
+      <a href="{{ url_for('pages.landing') }}" {% if request.endpoint == 'pages.landing' %}class="is-active"{% endif %}>خانه</a>
+      {% if meta and meta.id %}
+        <a href="{{ url_for('pages.inspect', dataset_id=meta.id) }}"
+           {% if request.endpoint == 'pages.inspect' %}class="is-active"{% endif %}>بازرسی</a>
+        <a href="{{ url_for('pages.clean_page', dataset_id=meta.id) }}"
+           {% if request.endpoint == 'pages.clean_page' %}class="is-active"{% endif %}>پاک‌سازی</a>
+        <a href="{{ url_for('pages.dashboard', dataset_id=meta.id) }}"
+           {% if request.endpoint == 'pages.dashboard' %}class="is-active"{% endif %}>تحلیل</a>
+        <a href="{{ url_for('pages.report', dataset_id=meta.id) }}"
+           {% if request.endpoint == 'pages.report' %}class="is-active"{% endif %}>گزارش</a>
+      {% endif %}
+      <a href="{{ url_for('pages.methodology') }}"
+         {% if request.endpoint == 'pages.methodology' %}class="is-active"{% endif %}>روش کار</a>
+      <a href="/api" class="nav__api">API</a>
+    </nav>
+  </div>
+</header>
+
+{% if rail %}
+<nav class="rail" aria-label="مراحل پردازش">
+  <ol class="wrap rail__list">
+    {% for step in rail %}
+      <li class="rail__item rail__item--{{ step.state }}">
+        {% if step.url and meta and meta.id %}
+          <a href="{{ step.url }}">
+            <span class="rail__icon" aria-hidden="true">{{ step.icon }}</span>
+            <span class="rail__label">{{ step.label }}</span>
+          </a>
+        {% else %}
+          <span>
+            <span class="rail__icon" aria-hidden="true">{{ step.icon }}</span>
+            <span class="rail__label">{{ step.label }}</span>
+          </span>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ol>
+</nav>
+{% endif %}
+
+<main id="main" class="wrap page">
+  {% if meta and meta.id %}
+    <div class="filebar">
+      <div class="filebar__name">
+        <span class="chip chip--muted">{{ meta.extension }}</span>
+        <strong>{{ meta.display_name }}</strong>
+        <span class="muted">{{ meta.size_text }}</span>
+      </div>
+      <div class="filebar__meta">
+        {% if meta.sheet %}<span class="muted">شیت: {{ meta.sheet }}</span>{% endif %}
+        {% if meta.encoding %}<span class="muted">کدگذاری: {{ meta.encoding|upper }}</span>{% endif %}
+        <span class="muted">شناسهٔ بسته: <span class="mono">{{ meta.id }}</span></span>
+        <a class="link" href="{{ url_for('pages.landing') }}">فایل تازه</a>
+      </div>
+    </div>
+    {% if meta.warnings %}
+      <details class="warnbox">
+        <summary>{{ meta.warnings|length }} یادداشت دربارهٔ خواندن فایل</summary>
+        <ul>
+          {% for item in meta.warnings %}<li>{{ item }}</li>{% endfor %}
+        </ul>
+      </details>
+    {% endif %}
+    {% if meta.truncated %}
+      <div class="notice notice--warn">
+        فایل بیش از سقف مجاز سطر داشت و فقط بخشی از آن تحلیل شده است. عددهای
+        این گزارش به همان بخش خوانده‌شده مربوط‌اند.
+      </div>
+    {% endif %}
+  {% endif %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+  <div class="wrap footer__inner">
+    <div>
+      <strong>گزارش‌ساز</strong>
+      <span class="muted">— پردازش خودکار داده و ساخت گزارش</span>
+    </div>
+    <div class="footer__links">
+      <a href="{{ url_for('pages.methodology') }}">روش کار</a>
+      <a href="{{ url_for('pages.demo') }}">داده نمونه</a>
+      <a href="/health">وضعیت سرویس</a>
+      <a href="/api">API</a>
+    </div>
+    <p class="footer__note">
+      هیچ فایل بارگذاری‌شده‌ای اجرا نمی‌شود؛ داده فقط خوانده و تحلیل می‌شود.
+      بسته‌های پردازش پس از پایان عمر خودکار پاک می‌شوند.
+    </p>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</body>
+</html>

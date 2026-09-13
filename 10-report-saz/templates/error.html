@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="panel panel--error">
+  <p class="eyebrow">مشکلی پیش آمد</p>
+  <h1 class="page-title">{{ title }}</h1>
+  <p class="error__message">{{ error.message }}</p>
+
+  {% if error.detail %}
+    <details class="explain">
+      <summary>جزئیات فنی</summary>
+      <p class="mono">{{ error.detail }}</p>
+    </details>
+  {% endif %}
+
+  {% if error.code == 'legacy_format' %}
+    <div class="callout callout--info">
+      <p class="callout__title">چطور تبدیل کنم؟</p>
+      <p class="callout__body">
+        در اکسل فایل را باز کنید و از «ذخیره به‌عنوان» گزینهٔ
+        <strong>Excel Workbook (.xlsx)</strong> را انتخاب کنید. اگر داده فقط یک
+        جدول است، ذخیره به‌صورت CSV با کدگذاری UTF-8 هم کار می‌کند.
+      </p>
+    </div>
+  {% endif %}
+
+  <div class="error__actions">
+    <a class="btn btn--primary" href="{{ url_for('pages.landing') }}">بازگشت به صفحهٔ اصلی</a>
+    <a class="btn btn--ghost" href="{{ url_for('pages.demo') }}">دانلود دادهٔ نمونه</a>
+    <a class="btn btn--ghost" href="{{ url_for('pages.methodology') }}">روش کار</a>
+  </div>
+</section>
+{% endblock %}

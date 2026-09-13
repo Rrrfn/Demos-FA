@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero__copy">
+    <p class="eyebrow">گزارش‌سازی خودکار از داده</p>
+    <h1 class="hero__title">
+      فایل اکسل را بدهید؛
+      <span>گزارش تحلیل‌شده</span>
+      بگیرید.
+    </h1>
+    <p class="hero__lead">
+      گزارش‌ساز فایل را می‌خواند، کیفیت داده را می‌سنجد، مسائل را نشان می‌دهد،
+      با اجازهٔ شما پاک‌سازی می‌کند و در پایان یک گزارش مدیریتی با شاخص، نمودار
+      و بینش می‌سازد — همراه با خروجی PDF و اکسل قالب‌بندی‌شده.
+    </p>
+    <ul class="hero__points">
+      <li>هیچ عددی ساخته نمی‌شود؛ اگر داده نباشد، بخش مربوطه خالی می‌ماند.</li>
+      <li>پاک‌سازی شفاف است: هر اصلاح با شمار دقیقش ثبت می‌شود.</li>
+      <li>تاریخ شمسی، ارقام فارسی و «۱٬۲۰۰٬۰۰۰ ریال» پشتیبانی می‌شوند.</li>
+    </ul>
+  </div>
+
+  <div class="hero__panel">
+    <form class="uploader" method="post" action="{{ url_for('pages.upload') }}"
+          enctype="multipart/form-data" data-uploader
+          data-max-bytes="{{ max_upload_bytes }}">
+      <div class="uploader__drop" data-dropzone>
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="uploader__icon">
+          <path d="M12 3v12m0-12 4 4m-4-4L8 7" fill="none" stroke="currentColor"
+                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 15v3a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-3" fill="none"
+                stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <p class="uploader__hint">فایل را اینجا رها کنید یا انتخاب کنید</p>
+        <p class="uploader__note">
+          {% for item in view.formats %}{{ item.name }}{% if not loop.last %}، {% endif %}{% endfor %}
+          — تا {{ view.limits.size }}
+        </p>
+        <input class="uploader__input" type="file" name="file"
+               accept=".xlsx,.csv" required data-file-input
+               aria-label="انتخاب فایل اکسل یا CSV">
+      </div>
+      <p class="uploader__picked" data-file-name hidden></p>
+      <button class="btn btn--primary btn--block" type="submit" data-submit>
+        پردازش فایل
+      </button>
+      <p class="uploader__error" data-file-error hidden></p>
+    </form>
+
+    <div class="demo-card">
+      <div>
+        <p class="demo-card__title">داده‌ای برای امتحان ندارید؟</p>
+        <p class="demo-card__body">
+          یک کارپوشهٔ نمونهٔ {{ view.demo.rows|fa }} سطری با چند عیب عمدی
+          دانلود کنید و گردش کار را کامل ببینید.
+          <strong>{{ view.demo.note }}</strong>
+        </p>
+      </div>
+      <a class="btn btn--ghost" href="{{ url_for('pages.demo') }}">دانلود نمونه</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="section__title">گردش کار</h2>
+  <p class="section__lead">
+    پنج گام روشن. در هر گام می‌بینید چه چیزی با دادهٔ شما انجام می‌شود و
+    می‌توانید تصمیم بگیرید.
+  </p>
+  <ol class="flow">
+    {% for step in view.workflow %}
+      <li class="flow__item">
+        <span class="flow__index">{{ loop.index|digits }}</span>
+        <h3 class="flow__title">{{ step.title }}</h3>
+        <p class="flow__body">{{ step.body }}</p>
+      </li>
+    {% endfor %}
+  </ol>
+</section>
+
+<section class="section">
+  <h2 class="section__title">قابلیت‌ها</h2>
+  <div class="grid grid--3">
+    {% for item in view.capabilities %}
+      <article class="card">
+        <h3 class="card__title">{{ item.title }}</h3>
+        <p class="card__body">{{ item.body }}</p>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section section--split">
+  <div>
+    <h2 class="section__title">قالب‌های پشتیبانی‌شده</h2>
+    <ul class="list">
+      {% for item in view.formats %}
+        <li><strong>{{ item.name }}</strong> — {{ item.note }}</li>
+      {% endfor %}
+      <li class="muted">
+        قالب‌های قدیمی مثل <span class="mono">.xls</span>،
+        <span class="mono">.xlsm</span> و <span class="mono">.ods</span> با
+        پیام روشن و راهنمای تبدیل رد می‌شوند — نه با خطای عمومی.
+      </li>
+    </ul>
+  </div>
+  <div>
+    <h2 class="section__title">نکات اعتماد</h2>
+    <ul class="list list--checks">
+      {% for item in view.guarantees %}<li>{{ item }}</li>{% endfor %}
+    </ul>
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="section__title">امتیاز کیفیت داده</h2>
+  <p class="section__lead">{{ view.limits.quality_method }}</p>
+</section>
+{% endblock %}

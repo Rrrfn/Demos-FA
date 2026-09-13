@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">گام ۳ از ۵</p>
+    <h1 class="page-title">پاک‌سازی داده</h1>
+    <p class="page-lead">
+      هیچ تغییری بدون تصمیم شما اعمال نمی‌شود. هر اصلاح با شمار دقیقش در
+      گزارش ثبت می‌شود.
+    </p>
+  </div>
+  <div class="page-head__actions">
+    <a class="btn btn--primary" href="{{ url_for('pages.dashboard', dataset_id=meta.id) }}">
+      رفتن به تحلیل
+    </a>
+  </div>
+</header>
+
+<section class="panel">
+  <h2 class="panel__title">مسائل پیداشده در فایل</h2>
+  <p class="panel__lead">
+    این فهرست روی دادهٔ <strong>خام</strong> سنجیده شده و با اجرای پاک‌سازی
+    عوض نمی‌شود تا همیشه بدانید از کجا شروع کرده‌اید.
+  </p>
+  {% if view.findings %}
+    <ul class="findings">
+      {% for item in view.findings %}
+        <li class="finding finding--{{ item.severity }}">
+          <div class="finding__head">
+            <strong>{{ item.title }}</strong>
+            <span class="chip chip--count">{{ item.affected|fa }} مورد</span>
+          </div>
+          <p class="finding__detail">{{ item.detail }}</p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    {{ ui.empty_state('مسئله‌ای پیدا نشد', 'جدول از نظر خالی‌بودن، تکرار و نوع ستون‌ها سالم است.') }}
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2 class="panel__title">انتخاب اصلاح‌ها</h2>
+  <p class="panel__lead">
+    هر گزینه را می‌توانید خاموش کنید. موارد روشن، پیش از اجرا در فهرست
+    «اصلاحات اعمال‌شده» ثبت می‌شوند.
+  </p>
+  <form method="post" action="{{ url_for('pages.clean_page', dataset_id=meta.id) }}">
+    <div class="options">
+      {% for item in view.options %}
+        <label class="option">
+          <input type="checkbox" name="{{ item.key }}"
+                 {% if view.selected.get(item.key) %}checked{% endif %}>
+          <span class="option__body">
+            <span class="option__title">{{ item.title }}</span>
+            <span class="option__detail">{{ item.detail }}</span>
+            <span class="option__affects">اثر: {{ item.affects }}</span>
+          </span>
+        </label>
+      {% endfor %}
+    </div>
+    <div class="panel__actions">
+      <button class="btn btn--primary" type="submit">اجرای پاک‌سازی</button>
+      <span class="muted">دادهٔ خام دست‌نخورده می‌ماند و می‌توانید دوباره اجرا کنید.</span>
+    </div>
+  </form>
+</section>
+
+{% if view.applied %}
+<section class="panel">
+  <h2 class="panel__title">اصلاحات اعمال‌شده</h2>
+  <div class="grid grid--3 stats">
+    <div class="stat">
+      <p class="stat__label">سطر پیش از پاک‌سازی</p>
+      <p class="stat__value">{{ view.applied.rows_before|fa }}</p>
+    </div>
+    <div class="stat">
+      <p class="stat__label">سطر پس از پاک‌سازی</p>
+      <p class="stat__value">{{ view.applied.rows_after|fa }}</p>
+    </div>
+    <div class="stat">
+      <p class="stat__label">سطر حذف‌شده</p>
+      <p class="stat__value">{{ view.applied.rows_removed|fa }}</p>
+    </div>
+  </div>
+
+  {% if view.applied.fixes %}
+    <ul class="fixes">
+      {% for fix in view.applied.fixes %}
+        <li class="fix {{ 'fix--destructive' if fix.destructive else '' }}">
+          <div class="fix__head">
+            <strong>{{ fix.title }}</strong>
+            <span class="chip chip--count">{{ fix.affected|fa }} مورد</span>
+          </div>
+          <p class="fix__detail">{{ fix.detail }}</p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    {{ ui.empty_state('هیچ اصلاحی لازم نبود', 'داده با گزینه‌های انتخابی نیازی به تغییر نداشت.') }}
+  {% endif %}
+
+  {% if view.quality_after %}
+    <h3 class="panel__subtitle">کیفیت داده پس از پاک‌سازی</h3>
+    <div class="quality quality--compact">
+      <div class="quality__score quality__score--{{ view.quality_after.band }}">
+        <p class="quality__number">{{ view.quality_after.score_text }}</p>
+        <p class="quality__label">{{ view.quality_after.label }}</p>
+      </div>
+      <div class="quality__parts">
+        {% for item in view.quality_after.parts %}
+          {{ ui.meter(item.label, item.value_text, item.value, item.detail,
+                      item.band, item.weight_text) }}
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  {% if view.preview_after %}
+    <h3 class="panel__subtitle">دادهٔ پاک‌شده</h3>
+    {{ ui.preview(view.preview_after, 'پس از اعمال اصلاح‌ها') }}
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="panel">
+  <h2 class="panel__title">دادهٔ خام (پیش از پاک‌سازی)</h2>
+  {{ ui.preview(view.preview_before, 'بدون هیچ تغییری') }}
+</section>
+{% endblock %}

@@ -1,0 +1,164 @@
+{# ---------------------------------------------------------------- ماکروها
+   هر چیزی که در بیش از یک صفحه می‌آید اینجاست تا یک بار نوشته شود و همه‌جا
+   یک شکل بماند. قالب‌ها هیچ منطق محاسباتی ندارند؛ همهٔ مقادیر آماده از
+   لایهٔ نمایش می‌آید. #}
+
+{% macro kpi_card(item) %}
+  <article class="kpi">
+    <p class="kpi__label">{{ item.label }}</p>
+    <p class="kpi__value">{{ item.value }}</p>
+    <p class="kpi__hint">
+      {% if item.change %}
+        <span class="delta delta--{{ 'up' if item.direction == 'up' else 'down' }}">
+          {{ item.change }} {{ 'افزایش' if item.direction == 'up' else 'کاهش' }}
+        </span>
+      {% endif %}
+      {{ item.hint }}
+    </p>
+  </article>
+{% endmacro %}
+
+{% macro kpi_grid(cards) %}
+  <div class="kpi-grid">
+    {% for item in cards %}{{ kpi_card(item) }}{% endfor %}
+  </div>
+{% endmacro %}
+
+{% macro data_table(columns, rows, caption='') %}
+  <figure class="table-block">
+    {% if caption %}<figcaption>{{ caption }}</figcaption>{% endif %}
+    <div class="table-scroll">
+      <table class="table">
+        <thead>
+          <tr>{% for column in columns %}<th>{{ column }}</th>{% endfor %}</tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+            <tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </figure>
+{% endmacro %}
+
+{% macro chart_block(chart) %}
+  <figure class="chart-block" id="chart-{{ chart.key }}">
+    <div class="chart-block__canvas">{{ chart.svg|safe }}</div>
+    {% if chart.note %}
+      <p class="chart-block__note">{{ chart.note }}</p>
+    {% endif %}
+    {% if chart.table and chart.table.rows %}
+      <details class="chart-block__data">
+        <summary>دادهٔ همین نمودار</summary>
+        {{ data_table(chart.table.columns, chart.table.rows) }}
+      </details>
+    {% endif %}
+  </figure>
+{% endmacro %}
+
+{% macro callout(title, body, severity='info') %}
+  <aside class="callout callout--{{ severity }}">
+    <p class="callout__title">{{ title }}</p>
+    <p class="callout__body">{{ body }}</p>
+  </aside>
+{% endmacro %}
+
+{% macro meter(label, value_text, width, detail='', band='fair', weight='') %}
+  <div class="meter">
+    <div class="meter__head">
+      <span class="meter__label">{{ label }}
+        {% if weight %}<span class="meter__weight">وزن {{ weight }}</span>{% endif %}
+      </span>
+      <span class="meter__value">{{ value_text }}</span>
+    </div>
+    <div class="meter__track">
+      <div class="meter__fill meter__fill--{{ band }}" style="width: {{ width }}%"></div>
+    </div>
+    {% if detail %}<p class="meter__detail">{{ detail }}</p>{% endif %}
+  </div>
+{% endmacro %}
+
+{% macro preview(preview, note='') %}
+  {% if preview %}
+    <div class="preview">
+      <div class="preview__head">
+        <span class="muted">پیش‌نمایش {{ preview.total_rows|fa }} سطر
+          {% if preview.hidden_columns %}— {{ preview.hidden_columns|fa }} ستون دیگر نمایش داده نشد{% endif %}
+        </span>
+        {% if note %}<span class="muted">{{ note }}</span>{% endif %}
+      </div>
+      <div class="table-scroll">
+        <table class="table table--compact">
+          <thead>
+            <tr>{% for column in preview.columns %}<th>{{ column }}</th>{% endfor %}</tr>
+          </thead>
+          <tbody>
+            {% for row in preview.rows %}
+              <tr>
+                {% for cell in row %}
+                  <td class="{{ 'is-empty' if not cell else '' }}">{{ cell or '—' }}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endif %}
+{% endmacro %}
+
+{% macro role_pills(roles) %}
+  <div class="pills">
+    {% for item in roles.counts %}
+      <span class="chip">{{ item.label }}: {{ item.count }}</span>
+    {% endfor %}
+  </div>
+{% endmacro %}
+
+{# انتخاب تم. شناسهٔ بسته صریح می‌آید چون ماکرو متن فراخوان را نمی‌بیند. #}
+{% macro theme_picker(themes, current, next_target, dataset_id) %}
+  <form class="theme-picker" method="post" action="{{ url_for('pages.set_theme', dataset_id=dataset_id) }}">
+    <input type="hidden" name="next" value="{{ next_target }}">
+    <span class="theme-picker__label">تم گزارش</span>
+    <div class="theme-picker__options">
+      {% for item in themes %}
+        <label class="theme-option {% if item.key == current %}is-active{% endif %}">
+          <input type="radio" name="theme" value="{{ item.key }}"
+                 {% if item.key == current %}checked{% endif %}>
+          <span class="theme-option__label">{{ item.label }}</span>
+          <span class="theme-option__desc">{{ item.description }}</span>
+        </label>
+      {% endfor %}
+    </div>
+    <button class="btn btn--ghost btn--small" type="submit">اعمال تم</button>
+  </form>
+{% endmacro %}
+
+{% macro insight_list(insights) %}
+  <div class="insights">
+    {% for item in insights %}
+      <article class="insight insight--{{ item.severity }}">
+        <h3 class="insight__title">{{ item.title }}</h3>
+        <p class="insight__body">{{ item.body }}</p>
+        {% if item.evidence_items %}
+          <details class="insight__evidence">
+            <summary>شاهد عددی</summary>
+            <ul>
+              {% for entry in item.evidence_items %}
+                <li><span class="muted">{{ entry.label }}</span>: {{ entry.value }}</li>
+              {% endfor %}
+            </ul>
+          </details>
+        {% endif %}
+      </article>
+    {% endfor %}
+  </div>
+{% endmacro %}
+
+{% macro empty_state(title, body) %}
+  <div class="empty">
+    <p class="empty__title">{{ title }}</p>
+    <p class="empty__body">{{ body }}</p>
+  </div>
+{% endmacro %}

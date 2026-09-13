@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">گام ۵ از ۵</p>
+    <h1 class="page-title">گزارش</h1>
+    <p class="page-lead">
+      این پیش‌نمایش و فایل PDF از یک ساختار مشترک ساخته می‌شوند، پس هر چه
+      اینجا می‌بینید در خروجی هم هست.
+    </p>
+  </div>
+  <div class="page-head__actions">
+    <a class="btn btn--primary" href="{{ view.exports.pdf }}">دانلود PDF</a>
+    <a class="btn btn--ghost" href="{{ view.exports.excel }}">دانلود اکسل</a>
+  </div>
+</header>
+
+<section class="panel panel--theme">
+  {{ ui.theme_picker(view.themes, view.theme, 'report', meta.id) }}
+  <p class="muted">
+    تم روی رنگ نمودارها، PDF و کارپوشهٔ اکسل اعمال می‌شود.
+  </p>
+</section>
+
+<div class="report" style="
+  --primary: {{ view.report.theme.primary }};
+  --primary-dark: {{ view.report.theme.primary_dark }};
+  --accent: {{ view.report.theme.accent }};
+  --ink: {{ view.report.theme.ink }};
+  --muted: {{ view.report.theme.muted }};
+  --line: {{ view.report.theme.line }};
+  --soft: {{ view.report.theme.soft }};">
+  <header class="report__cover">
+    <p class="eyebrow">{{ view.report.subtitle }}</p>
+    <h2 class="report__title">{{ view.report.title }}</h2>
+    <dl class="report__meta">
+      {% for item in view.report.meta_lines %}
+        <div><dt>{{ item.label }}</dt><dd>{{ item.value }}</dd></div>
+      {% endfor %}
+    </dl>
+  </header>
+
+  <nav class="report__toc" aria-label="فهرست گزارش">
+    <ol>
+      {% for section in view.sections %}
+        <li>
+          <a href="#section-{{ section.key }}">
+            {{ section.title }}
+            <span class="muted">{{ section.blocks|fa }} بخش</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ol>
+  </nav>
+
+  {% for section in view.report.sections %}
+    <section class="report__section" id="section-{{ section.key }}">
+      <h3 class="report__section-title">{{ section.title }}</h3>
+      {# محتوای هر بلوک زیر کلید ``data`` می‌نشیند؛ خواندن مستقیم از ``block``
+         قالب را خالی ولی بی‌خطا رندر می‌کرد — همان چیزی که در پیش‌نمایش
+         بدون نمودار و بدون کارت شاخص دیده می‌شد. #}
+      {% for block in section.blocks %}
+        {% set body = block.data %}
+        {% if block.kind == 'paragraph' %}
+          <p class="report__paragraph">{{ body.text }}</p>
+        {% elif block.kind == 'list' %}
+          <h4 class="report__subtitle">{{ body.title }}</h4>
+          <ul class="list">{% for item in body.entries %}<li>{{ item }}</li>{% endfor %}</ul>
+        {% elif block.kind == 'notes' %}
+          <h4 class="report__subtitle">{{ body.title }}</h4>
+          <ul class="list">{% for item in body.entries %}<li>{{ item }}</li>{% endfor %}</ul>
+        {% elif block.kind == 'kpis' %}
+          {{ ui.kpi_grid(body.entries) }}
+        {% elif block.kind == 'callout' %}
+          {{ ui.callout(body.title, body.body, body.severity) }}
+        {% elif block.kind == 'callouts' %}
+          <div class="callouts">
+            {% for item in body.entries %}
+              {{ ui.callout(item.title, item.body, item.severity) }}
+            {% endfor %}
+          </div>
+        {% elif block.kind == 'table' %}
+          {{ ui.data_table(body.columns, body.rows, body.caption) }}
+        {% elif block.kind == 'chart' %}
+          <figure class="report__chart">
+            <figcaption>{{ body.caption }}</figcaption>
+            <div class="chart-block__canvas">{{ body.svg|safe }}</div>
+          </figure>
+        {% endif %}
+      {% endfor %}
+    </section>
+  {% endfor %}
+</div>
+
+<section class="panel">
+  <h2 class="panel__title">خروجی‌ها</h2>
+  <div class="grid grid--2">
+    <div class="card card--action">
+      <h3 class="card__title">گزارش PDF</h3>
+      <p class="card__body">
+        چندصفحه‌ای با جلد، خلاصهٔ مدیریتی، شاخص‌ها، نمودارها، بینش‌ها، تحلیل
+        تفصیلی و بخش روش کار و محدودیت‌ها. متن فارسی با شکل‌دهی درست حروف.
+      </p>
+      <a class="btn btn--primary" href="{{ view.exports.pdf }}">دانلود PDF</a>
+    </div>
+    <div class="card card--action">
+      <h3 class="card__title">کارپوشهٔ اکسل</h3>
+      <p class="card__body">
+        برگه‌های «خلاصه»، «کیفیت داده»، «پروفایل ستون‌ها»، «مسائل و اصلاحات»،
+        «نوسان گروه‌ها» و «داده پاک‌شده» با سرصفحهٔ ثابت و فیلتر خودکار.
+      </p>
+      <a class="btn btn--primary" href="{{ view.exports.excel }}">دانلود اکسل</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
