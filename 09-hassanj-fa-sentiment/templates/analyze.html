@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block content %}
+<section class="page-head">
+  <span class="kicker">تحلیل تک‌متن</span>
+  <h1>یک کامنت را تحلیل کن</h1>
+  <p class="lede">
+    نتیجه با برچسب، اطمینان، سهم هر کلاس و واژه‌هایی که تصمیم را جابه‌جا کرده‌اند
+    برمی‌گردد. اگر متن بیرون از واژگان مدل باشد، سایت به‌جای برچسب بی‌معنا همین
+    را می‌گوید.
+  </p>
+</section>
+
+<form class="analyze-form" method="get" action="{{ url_for('pages.analyze') }}">
+  <label class="field">
+    <span class="field-label">متن کامنت</span>
+    <textarea name="q" rows="4" maxlength="{{ max_chars }}"
+              placeholder="مثلاً: کیفیت خوب بود ولی ارسالش دیر شد">{{ raw }}</textarea>
+  </label>
+  <div class="form-row">
+    <button class="btn btn-primary" type="submit">تحلیل کن</button>
+    <span class="counter" id="char-counter" data-max="{{ max_chars }}">۰ از ۰ نویسه</span>
+    <span class="muted small">متن بلندتر از سقف بریده می‌شود و همین گفته می‌شود.</span>
+  </div>
+</form>
+
+<div class="examples">
+  <span class="muted small">نمونه:</span>
+  {% for item in examples %}
+    <a class="chip" href="{{ url_for('pages.analyze') }}?q={{ item.text | urlencode }}">{{ item.label }}</a>
+  {% endfor %}
+</div>
+
+<div id="result-region">
+{% if view and view.has_input %}
+  <section class="result" aria-live="polite">
+    <div class="result-head">
+      <div class="verdict">
+        <span class="verdict-label label-{{ view.label_code }}">{{ view.label_fa }}</span>
+        <strong>{{ view.confidence_fa }}</strong>
+        {{ ui.badge(view.band == 'high' and 'قابل اتکا' or (view.band == 'medium' and 'مرزی' or 'نامطمئن'),
+                   view.band == 'high' and 'good' or (view.band == 'medium' and 'warn' or 'bad')) }}
+      </div>
+      <p class="verdict-sentence">{{ view.verdict }}</p>
+    </div>
+
+    {% if view.state != 'ok' %}
+      <div class="callout callout-warn">
+        <strong>{{ view.state == 'thin_coverage' and 'پوشش واژگان کم' or 'سیگنال ناکافی' }}</strong>
+        <p>{{ view.state_note }}</p>
+      </div>
+    {% endif %}
+
+    <div class="split">
+      <figure class="chart-card">
+        {{ view.chart | safe }}
+        <figcaption>احتمال هر کلاس برای همین متن، از خروجی کالیبره‌شدهٔ مدل.</figcaption>
+      </figure>
+
+      <div class="panel">
+        <h3>پوشش واژگان</h3>
+        <p class="big-number">{{ view.coverage_fa }}</p>
+        <p class="muted small">
+          {{ view.known_count }} از {{ view.token_count }} توکن متن در واژگان مدل هست.
+          در اندازه‌گیری همین پروژه، دقت مدل زیر ۵۰٪ پوشش حدود ۰٫۵۶ و بالای ۸۰٪
+          حدود ۱٫۰۰ است — یعنی همین عدد برای اعتماد به پاسخ مهم‌تر از خودِ اطمینان است.
+        </p>
+        {% if view.unknown %}
+          <p class="muted small">واژه‌های ناشناس برای مدل:</p>
+          <p class="tokens">{% for token in view.unknown %}<span class="token is-unknown">{{ token }}</span>{% endfor %}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="panel">
+        <h3>به سمت این برچسب</h3>
+        {{ ui.meter(view.toward, 'signal-pos',
+             'امتیاز هر واژه نسبی است — برای مقایسهٔ واژه‌ها با هم، نه به‌عنوان احتمال.') }}
+      </div>
+      <div class="panel">
+        <h3>در جهت مخالف</h3>
+        {{ ui.meter(view.against, 'signal-neg',
+             'واژه‌هایی که مدل را از این برچسب دور کرده‌اند.') }}
+      </div>
+    </div>
+
+    <details class="details">
+      <summary>متن پاک‌شده و توکن‌ها</summary>
+      <p class="muted small">نرمال‌سازی: حروف عربی→فارسی، اعراب، تکرار حروف، غلط‌های تایپی و ایموجی.</p>
+      <p class="cleaned">{{ view.cleaned }}</p>
+      <p class="tokens">
+        {% for token in view.known %}<span class="token">{{ token }}</span>{% endfor %}
+      </p>
+    </details>
+  </section>
+{% endif %}
+</div>
+{% endblock %}

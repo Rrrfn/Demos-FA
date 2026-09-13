@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: hassanj-fa-sentiment
+    runtime: python
+    plan: free
+    region: frankfurt
+    rootDir: 09-hassanj-fa-sentiment
+    buildCommand: >-
+      pip install -r requirements.txt &&
+      python -c "from hassanj.model import train_all; train_all()"
+    startCommand: >-
+      gunicorn wsgi:application
+      --bind 0.0.0.0:$PORT
+      --workers 1
+      --threads 4
+      --timeout 120
+      --access-logfile -
+      --error-logfile -
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: PYTHONUNBUFFERED
+        value: "1"

@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block content %}
+<section class="page-head">
+  <span class="kicker">تحلیل گروهی</span>
+  <h1>فایل کامنت‌ها را یک‌جا تحلیل کن</h1>
+  <p class="lede">
+    یک فایل CSV بدهید تا هر ردیف برچسب، اطمینان و وضعیت خودش را بگیرد. ردیف‌هایی
+    که مدل روی‌شان سیگنال کافی ندارد حذف نمی‌شوند؛ در ستون وضعیت علامت می‌خورند
+    و در درصدها شمرده نمی‌شوند.
+  </p>
+</section>
+
+<form class="upload-form" method="post" enctype="multipart/form-data"
+      action="{{ url_for('pages.batch') }}">
+  <label class="drop">
+    <input type="file" name="file" accept=".csv,text/csv" required>
+    <span class="drop-title">یک فایل CSV انتخاب کنید</span>
+    <span class="drop-hint">
+      حداکثر {{ max_rows }} سطر. ستون متن با نام‌های
+      <code>text</code>، <code>comment</code>، <code>متن</code> یا <code>نظر</code> پیدا می‌شود؛
+      اگر پیدا نشود، ستون نخست به‌عنوان متن خوانده می‌شود و همین اطلاع داده می‌شود.
+    </span>
+  </label>
+  <div class="form-row">
+    <button class="btn btn-primary" type="submit" name="action" value="analyse">تحلیل کن</button>
+    <button class="btn" type="submit" name="action" value="download">تحلیل و دانلود CSV</button>
+  </div>
+</form>
+
+{% if error %}
+  <div class="callout callout-bad" role="alert">
+    <strong>فایل پردازش نشد</strong>
+    <p>{{ error }}</p>
+  </div>
+{% endif %}
+
+{% if outcome %}
+  {% set summary = outcome.summary %}
+
+  {% if outcome.guessed_column %}
+    <div class="callout callout-warn">
+      <strong>ستون متن حدس زده شد</strong>
+      <p>هیچ ستونی با نام رایج پیدا نشد، پس ستون <code>{{ outcome.text_column }}</code> به‌عنوان متن خوانده شد.</p>
+    </div>
+  {% endif %}
+
+  {% for warning in outcome.warnings %}
+    <div class="callout callout-warn"><p>{{ warning }}</p></div>
+  {% endfor %}
+
+  <section>
+    {{ ui.section_head('خلاصه', 'نتیجهٔ فایل') }}
+    <div class="kpi-grid">
+      {{ ui.kpi({'label': 'ردیف‌های فایل', 'value': summary.rows | fa_digits, 'hint': 'خوانده‌شده'}) }}
+      {{ ui.kpi({'label': 'تحلیل‌شده', 'value': summary.analysed | fa_digits, 'hint': 'با سیگنال کافی'}) }}
+      {{ ui.kpi({'label': 'تحلیل‌نشده', 'value': summary.skipped | fa_digits, 'hint': 'علامت‌خورده، نه حذف‌شده'}) }}
+      {{ ui.kpi({'label': 'میانگین اطمینان', 'value': summary.mean_confidence | fa_percent, 'hint': 'فقط ردیف‌های تحلیل‌شده'}) }}
+    </div>
+  </section>
+
+  <section>
+    {{ ui.section_head('ترکیب', 'سهم هر برچسب') }}
+    <div class="split">
+      <figure class="chart-card">
+        {{ share_chart | safe }}
+        {{ class_legend | safe }}
+        <figcaption>درصدها نسبت به ردیف‌های تحلیل‌شده حساب شده‌اند.</figcaption>
+      </figure>
+      <div class="panel">
+        <h3>شمار و سهم</h3>
+        <table class="table">
+          <tbody>
+            {% for code in ['pos', 'neu', 'neg'] %}
+              <tr>
+                <th scope="row">{{ ui.label_badge(code, summary.label_fa[code]) }}</th>
+                <td class="num">{{ summary.counts[code] | fa_digits }}</td>
+                <td class="num">{{ summary.shares[code] | fa_percent }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% if summary.skipped_reasons %}
+          <h4>دلیل تحلیل‌نشدن</h4>
+          <ul class="plain-list">
+            {% for reason, count in summary.skipped_reasons.items() %}
+              <li><span>{{ reason }}</span><strong>{{ count | fa_digits }}</strong></li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <section>
+    {{ ui.section_head('ردیف‌ها', 'نمونهٔ نتیجه',
+        'برای دیدن همهٔ ردیف‌ها فایل خروجی را دانلود کنید.') }}
+    <div class="tablewrap">
+      <table class="table table-rows">
+        <thead>
+          <tr>
+            <th scope="col">ردیف</th>
+            <th scope="col">متن</th>
+            <th scope="col">برچسب</th>
+            <th scope="col" class="num">اطمینان</th>
+            <th scope="col">وضعیت</th>
+            <th scope="col">واژه‌های مؤثر</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in outcome.row_preview %}
+            <tr>
+              <td class="num">{{ row.index }}</td>
+              <td class="cell-text">{{ row.text }}</td>
+              <td>
+                {% if row.label != '—' %}
+                  {{ ui.label_badge('', row.label) }}
+                {% else %}
+                  <span class="muted">—</span>
+                {% endif %}
+              </td>
+              <td class="num">{{ row.confidence }}</td>
+              <td><span class="state state-{{ 'ok' if row.state == 'تحلیل شد' else 'skip' }}">{{ row.state }}</span></td>
+              <td class="cell-terms">{{ row.signals | map(attribute='term') | join('، ') or '—' }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endif %}
+{% endblock %}

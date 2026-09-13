@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-copy">
+    <span class="kicker">پلتفرم هوش احساسات مشتری</span>
+    <h1>کامنت فارسی را به تصمیم تبدیل می‌کند</h1>
+    <p class="lede">
+      سه‌وجهی (مثبت، خنثی، منفی) با TF-IDF و مقایسهٔ سه طبقه‌بند — کاملاً آفلاین،
+      بدون هیچ سرویس بیرونی. هر عددی که در این سایت می‌بینید روی همین مخزن
+      محاسبه شده و در صفحهٔ «مدل» می‌توانید محدودیت‌هایش را هم بخوانید.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="{{ url_for('pages.analyze') }}">یک متن را تحلیل کن</a>
+      <a class="btn" href="{{ url_for('pages.batch') }}">فایل کامنت‌ها را بده</a>
+    </div>
+  </div>
+  <div class="hero-panel">
+    <h3>فاصلهٔ دو عدد</h3>
+    <p class="muted small">
+      دیتاست از ترکیب چند صد قطعه‌جمله ساخته می‌شود؛ پس اگر آزمون را از همان
+      قطعه‌جمله‌ها بگیریم، امتیاز بالا درمی‌آید و چیزی دربارهٔ زبان واقعی
+      نمی‌گوید. این سایت هر دو عدد را نشان می‌دهد.
+    </p>
+    <dl class="gap-list">
+      <div>
+        <dt>F1 روی آزمون هم‌توزیع</dt>
+        <dd>{{ numbers[1].value }}<small>خوش‌بینانه</small></dd>
+      </div>
+      <div>
+        <dt>F1 روی نمونهٔ دست‌نویس</dt>
+        <dd>{{ numbers[2].value }}<small>صادقانه‌تر</small></dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+{{ ui.kpis(numbers) }}
+
+<section>
+  {{ ui.section_head('ترکیب داده', 'دیتاست چطور چیده شده',
+      'دیتاست نمونه است و توازن کلاس‌ها در آن عمدی است.') }}
+  <div class="split">
+    <figure class="chart-card">
+      {{ balance_chart | safe }}
+      {{ class_legend | safe }}
+      <figcaption>شمار نمونهٔ هر کلاس در کل دیتاست نمونه.</figcaption>
+    </figure>
+    <div class="panel">
+      <h3>واقعی در برابر پیش‌بینی‌شده</h3>
+      <table class="table">
+        <thead>
+          <tr><th scope="col">کلاس</th><th scope="col" class="num">واقعی</th><th scope="col" class="num">پیش‌بینی</th></tr>
+        </thead>
+        <tbody>
+          {% for row in mix_table %}
+            <tr>
+              <th scope="row">{{ ui.label_badge(row.code, row.label) }}</th>
+              <td class="num">{{ row.actual_count }} <small>{{ row.actual_share }}</small></td>
+              <td class="num">{{ row.predicted_count }} <small>{{ row.predicted_share }}</small></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p class="muted small">
+        اگر مدل یک کلاس را بیش از سهم واقعی‌اش پیش‌بینی کند، همین جدول نشانش می‌دهد.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  {{ ui.section_head('مدل', 'سه نامزد، دو معیار',
+      'انتخاب برنده بر پایهٔ F1 آزمون هم‌توزیع انجام شده، ولی فاصلهٔ هر مدل با آزمون دست‌نویس هم گزارش می‌شود.') }}
+  <div class="tablewrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">مدل</th>
+          <th scope="col" class="num">F1 آزمون</th>
+          <th scope="col" class="num">دقت</th>
+          <th scope="col" class="num">F1 دست‌نویس</th>
+          <th scope="col" class="num">فاصله</th>
+          <th scope="col" class="num">زمان آموزش</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in ranking %}
+          <tr{% if row.is_best %} class="is-best"{% endif %}>
+            <th scope="row">
+              {{ row.name }}
+              {% if row.is_best %}{{ ui.badge('انتخاب‌شده', 'accent') }}{% endif %}
+            </th>
+            <td class="num">{{ row.f1 }}</td>
+            <td class="num">{{ row.accuracy }}</td>
+            <td class="num">{{ row.stress_f1 }}</td>
+            <td class="num">{{ row.gap }}</td>
+            <td class="num">{{ row.fit_seconds }} ثانیه</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted small">
+    ستون «فاصله» تفاوت دو آزمون است. بزرگ‌بودنش یعنی مدل روی دادهٔ هم‌شکل با
+    آموزش خوب کار می‌کند و روی زبان واقعی کمتر.
+    <a href="{{ url_for('pages.model_page') }}">جزئیات و خطاها</a>
+  </p>
+</section>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="error-page">
+  <span class="code">۴۰۴</span>
+  <h1>این صفحه پیدا نشد</h1>
+  <p>
+    نشانی‌ای که خواستید وجود ندارد یا جابه‌جا شده است. از ناوبری بالا می‌توانید
+    به بخش‌های اصلی برگردید.
+  </p>
+  <p>
+    <a class="btn btn-primary" href="{{ url_for('pages.overview') }}">بازگشت به نمای کلی</a>
+    <a class="btn" href="{{ url_for('pages.analyze') }}">تحلیل یک متن</a>
+  </p>
+</section>
+{% endblock %}

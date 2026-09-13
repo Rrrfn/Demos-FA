@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block content %}
+<section class="page-head">
+  <span class="kicker">متدولوژی</span>
+  <h1>داده از کجا می‌آید و مدل چطور ساخته می‌شود</h1>
+  <p class="lede">
+    این صفحه همان چیزی است که باید پیش از اعتماد به هر عددی در سایت خوانده شود.
+    کوتاه، ولی بدون جا انداختن محدودیت‌ها.
+  </p>
+</section>
+
+<div class="callout callout-info">
+  <strong>داده سینتتیک است</strong>
+  <p>
+    هیچ کامنت واقعی کاربری در این پروژه نیست. دیتاست از ترکیب چند صد قطعه‌جملهٔ
+    دست‌نویس ساخته می‌شود و روی آن چند منبع نویز کنترل‌شده اضافه می‌شود. نتیجه
+    برای نمایش روش کار می‌کند، ولی <strong>نباید</strong> به‌عنوان معیار کیفیت
+    روی کامنت واقعی خوانده شود.
+  </p>
+</div>
+
+<section>
+  {{ ui.section_head('مسیر داده', 'از متن خام تا عدد') }}
+  <ol class="pipeline">
+    <li><strong>دیتاست</strong><span>۱٬۸۰۰ نمونه، توازن دقیق سه کلاس، ستون تاریخ.</span></li>
+    <li><strong>نرمال‌سازی</strong><span>حروف عربی→فارسی، اعراب، تکرار حروف، نشانی و منشن، ایموجی، غلط‌های تایپی.</span></li>
+    <li><strong>نشانه‌گذاری نفی</strong><span>توکن زیر نفی با پیشوند مستقل علامت می‌خورد تا «ناراحت نشدم» با «ناراحت شدم» یکی نشود.</span></li>
+    <li><strong>بردارسازی</strong><span>TF-IDF با بازهٔ یک و دو واژه‌ای.</span></li>
+    <li><strong>آموزش</strong><span>مقایسهٔ سه طبقه‌بند، انتخاب با F1 آزمون، اعتبارسنجی متقابل برای برنده.</span></li>
+    <li><strong>ارزیابی دوگانه</strong><span>آزمون هم‌توزیع + مجموعهٔ دست‌نویس بیرون‌از‌توزیع.</span></li>
+  </ol>
+</section>
+
+<section>
+  {{ ui.section_head('دیتاست', 'توازن و روند') }}
+  <div class="split">
+    <figure class="chart-card">
+      {{ class_chart | safe }}
+      {{ class_legend | safe }}
+      <figcaption>شمار نمونهٔ هر کلاس. توازن عمدی است تا مدل به سمت کلاس پرتعداد کج نشود.</figcaption>
+    </figure>
+    <div class="panel">
+      <h3>روند درون دیتاست</h3>
+      <p class="muted small">
+        وزن ماهانهٔ هر کلاس از جدول صریح <code>MIX_BY_MONTH</code> می‌آید و
+        توازن کلاس‌ها هم دقیق است؛ ترکیب هر ماه از تقسیم این دو بیرون می‌آید.
+        ستون «اعلام‌شده» همان چیزی است که ساخت دیتاست وعده می‌دهد و کنارش
+        گذاشته شده تا خودتان تطابق را ببینید — روند قابل بازتولید و بازرسی است،
+        نه یک شکل تزئینی.
+      </p>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">ماه</th>
+            <th scope="col" class="num">مثبت</th>
+            <th scope="col" class="num">اعلام‌شده</th>
+            <th scope="col" class="num">نمونه</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for month in trend %}
+            <tr>
+              <th scope="row">{{ month.title }}</th>
+              <td class="num">{{ month.shares.pos | fa_percent }}</td>
+              <td class="num">{{ declared[loop.index0].shares.pos | fa_percent }}</td>
+              <td class="num">{{ month.total | fa_digits }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p class="muted small">
+        سهم «منفی» به همین نسبت پایین می‌آید: {{ trend[-1].shares.neg | fa_percent }}
+        در {{ trend[-1].title }} در برابر {{ trend[0].shares.neg | fa_percent }} در
+        {{ trend[0].title }}.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  {{ ui.section_head('نویز', 'چه چیزهایی در دیتاست شبیه‌سازی شده') }}
+  <div class="grid-3">
+    <article class="panel">
+      <h3>صفحه‌کلید عربی</h3>
+      <p class="muted small">
+        حروف فارسی با شکل عربی نوشته می‌شوند (<code>ی</code> → <code>ي</code>،
+        <code>ک</code> → <code>ك</code>). رایج‌ترین ناهمگونی متن فارسی است و
+        نرمال‌ساز بازیابی‌اش می‌کند.
+      </p>
+    </article>
+    <article class="panel">
+      <h3>غلط تایپی</h3>
+      <p class="muted small">
+        از همان جدول <code>TYPOS</code> که نرمال‌ساز می‌شناسد. یعنی مدل روی همان
+        غلطی تمرین می‌کند که در زمان اجرا اصلاح می‌شود — یک منبع حقیقت، نه دو تا.
+      </p>
+    </article>
+    <article class="panel">
+      <h3>ابهام واقعی</h3>
+      <p class="muted small">
+        ۲۵٪ نمونه‌ها یک قطعه از کلاس دیگر هم دارند («خوب بود ولی گرون»). بدون
+        این، مدل روی جمله‌های مرکب هیچ تجربه‌ای نمی‌گرفت.
+      </p>
+    </article>
+  </div>
+</section>
+
+<section>
+  {{ ui.section_head('محدودیت‌ها', 'چیزهایی که این سیستم نیست') }}
+  <ul class="limits">
+    <li><strong>تحلیل احساسات، درک معنا نیست.</strong> مدل روی الگوی واژه‌ها کار می‌کند، نه معنا.</li>
+    <li><strong>طنز و کنایه را نمی‌فهمد.</strong> «عجب کیفیتی داشت!» احتمالاً مثبت خوانده می‌شود.</li>
+    <li><strong>نفی مرکب را نصفه می‌گیرد.</strong> نشانه‌گذاری نفی کمک می‌کند، ولی جمله‌های چندلایه هنوز خطا دارند.</li>
+    <li><strong>متن انگلیسی را نمی‌پوشاند.</strong> واژگان مدل فارسی است؛ جملهٔ کامل انگلیسی بیرون از دامنه است.</li>
+    <li><strong>روی دامنهٔ تازه آموزش ندیده.</strong> اگر کامنت‌ها از حوزهٔ دیگری باشند (پزشکی، مالی)، دقت افت می‌کند.</li>
+    <li><strong>داده سینتتیک است.</strong> عددهای این سایت معیار کیفیت روی کامنت واقعی نیستند.</li>
+  </ul>
+</section>
+
+<section>
+  {{ ui.section_head('بازتولیدپذیری', 'همه‌چیز با یک seed ثابت') }}
+  <dl class="highlights">
+    <div><dt>مدل انتخاب‌شده</dt><dd>{{ metrics.best_model }}</dd></div>
+    <div><dt>نمونه‌های آموزش</dt><dd>{{ metrics.n_train | fa_digits }}</dd></div>
+    <div><dt>نمونه‌های آزمون</dt><dd>{{ metrics.n_test | fa_digits }}</dd></div>
+    <div><dt>نمونه‌های دست‌نویس</dt><dd>{{ metrics.stress_n | fa_digits }}</dd></div>
+    <div><dt>اندازهٔ واژگان</dt><dd>{{ metrics.vocabulary_size | fa_digits }}</dd></div>
+    <div><dt>زمان آموزش</dt><dd>{{ metrics.trained_at | fa_datetime }}</dd></div>
+  </dl>
+  <p class="muted small">
+    دیتاست با seed ثابت ساخته می‌شود، پس هر بار ساخت، متن‌های یکسانی تولید می‌شود
+    و عددهای گزارش‌شده تغییر نمی‌کنند. برای بازتولید:
+    <code>python -c "from hassanj.model import train_all; train_all()"</code>
+  </p>
+</section>
+{% endblock %}

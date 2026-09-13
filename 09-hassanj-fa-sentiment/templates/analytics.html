@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block content %}
+<section class="page-head">
+  <span class="kicker">تحلیل</span>
+  <h1>آنچه در داده هست، و آنچه مدل می‌بیند</h1>
+  <p class="lede">
+    هر نمودار این صفحه از خودِ دیتاست نمونه ساخته می‌شود. ترکیب واقعی و ترکیب
+    پیش‌بینی‌شده جدا گزارش می‌شوند، و در پایان همین صفحه نشان می‌دهیم دقت مدل
+    به کدام عامل وابسته است.
+  </p>
+</section>
+
+{{ ui.kpis(numbers) }}
+
+<section>
+  {{ ui.section_head('ترکیب', 'واقعی در برابر پیش‌بینی‌شده',
+      'اختلاف هر جفت، خطای سیستماتیک مدل روی دادهٔ نمونه است.') }}
+  <div class="split">
+    <figure class="chart-card">
+      {{ comparison_chart | safe }}
+      <figcaption>سهم هر کلاس به درصد — دو میلهٔ هر گروه، واقعی و پیش‌بینی‌شده.</figcaption>
+    </figure>
+    <div class="panel">
+      <h3>عددها</h3>
+      <table class="table">
+        <thead>
+          <tr><th scope="col">کلاس</th><th scope="col" class="num">واقعی</th><th scope="col" class="num">پیش‌بینی</th></tr>
+        </thead>
+        <tbody>
+          {% for row in mix_table %}
+            <tr>
+              <th scope="row">{{ ui.label_badge(row.code, row.label) }}</th>
+              <td class="num">{{ row.actual_count }} <small>{{ row.actual_share }}</small></td>
+              <td class="num">{{ row.predicted_count }} <small>{{ row.predicted_share }}</small></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p class="muted small">
+        مدل روی احتمال‌های کالیبره‌شده تصمیم می‌گیرد، پس اگر کلاسی را کمتر از سهم
+        واقعی‌اش ببیند، دلیلش در نمودار «واژگان متمایزکننده» پیداست.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  {{ ui.section_head('روند', 'سهم کلاس‌ها در طول زمان',
+      'روند از جدول صریح MIX_BY_MONTH در پیکربندی می‌آید؛ صفتی از دیتاست نمونه است، نه ادعایی دربارهٔ بازار.') }}
+  <figure class="chart-card">
+    {{ monthly_chart | safe }}
+    {{ class_legend | safe }}
+    <figcaption>هر گروه یک ماه است و سه میله‌اش سهم مثبت، خنثی و منفی.</figcaption>
+  </figure>
+</section>
+
+<section>
+  {{ ui.section_head('اطمینان', 'مدل چقدر مطمئن است — و آیا باید باشد؟') }}
+  <div class="split">
+    <figure class="chart-card">
+      {{ confidence_chart | safe }}
+      <figcaption>توزیع احتمال برچسب برنده روی کل دیتاست نمونه.</figcaption>
+    </figure>
+    <div class="panel">
+      <h3>چرا این نمودار مهم است</h3>
+      <p class="muted small">
+        اگر بیشتر نمونه‌ها نزدیک ۱۰۰٪ جمع شوند، مدل <em>بی‌جهت</em> مطمئن است —
+        نه این‌که حتماً درست می‌گوید. توزیع پهن‌تر و صادقانه‌تر، همان چیزی است
+        که در این نمودار به دنبالش هستیم.
+      </p>
+      <p class="muted small">
+        کنار همین، طول کامنت هم توزیع دارد: کامنت‌های کوتاه معمولاً سیگنال کمتری
+        دارند و مدل روی‌شان بیشتر می‌لنگد.
+      </p>
+    </div>
+  </div>
+  <figure class="chart-card">
+    {{ length_chart | safe }}
+    <figcaption>شمار کامنت‌ها بر پایهٔ تعداد توکن معنادار (پس از حذف ایستاها).</figcaption>
+  </figure>
+</section>
+
+<section>
+  {{ ui.section_head('عامل تعیین‌کننده', 'دقت مدل به عمق واژگان گره خورده است',
+      'روی مجموعهٔ دست‌نویس سنجیده شده: هیچ‌یک از این نمونه‌ها در آموزش نبوده است.') }}
+  <div class="split">
+    <figure class="chart-card">
+      {{ coverage_chart | safe }}
+      <figcaption>دقت به تفکیک سهم واژه‌های متن که در واژگان مدل وجود دارند.</figcaption>
+    </figure>
+    <div class="panel">
+      <h3>پیام این عدد</h3>
+      <table class="table">
+        <thead>
+          <tr><th scope="col">پوشش واژگان</th><th scope="col" class="num">نمونه</th><th scope="col" class="num">دقت</th></tr>
+        </thead>
+        <tbody>
+          {% for row in coverage_rows %}
+            <tr><th scope="row">{{ row.title }}</th><td class="num">{{ row.n }}</td><td class="num">{{ row.accuracy }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p class="muted small">
+        همین یافته دلیل وجود نشانگر «پوشش واژگان» در صفحهٔ تحلیل متن است: مدل
+        می‌داند کجا از عمق واژگانش بیرون رفته، و همان را به کاربر می‌گوید.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  {{ ui.section_head('واژگان', 'مدل روی چه واژه‌هایی تکیه می‌کند') }}
+  <div class="split">
+    <figure class="chart-card">
+      {{ terms.pos | safe }}
+      <figcaption>واژه‌ها و عبارت‌های متمایزکنندهٔ کلاس مثبت. طول میله نسبی است، نه احتمال.</figcaption>
+    </figure>
+    <figure class="chart-card">
+      {{ terms.neg | safe }}
+      <figcaption>واژه‌ها و عبارت‌های متمایزکنندهٔ کلاس منفی.</figcaption>
+    </figure>
+  </div>
+</section>
+{% endblock %}

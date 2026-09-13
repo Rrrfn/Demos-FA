@@ -1,0 +1,63 @@
+{#- قطعه‌های تکرارشوندهٔ رابط. هرکدام مسئول یک چیز است تا صفحه‌ها فقط ترکیب
+    کنند و ساختار دوباره‌نویسی نشود. -#}
+
+{% macro kpi(item) %}
+  <div class="kpi">
+    <span class="kpi-label">{{ item.label }}</span>
+    <strong class="kpi-value">{{ item.value }}</strong>
+    {% if item.hint %}<span class="kpi-hint">{{ item.hint }}</span>{% endif %}
+  </div>
+{% endmacro %}
+
+{% macro kpis(items) %}
+  <div class="kpi-grid">{% for item in items %}{{ kpi(item) }}{% endfor %}</div>
+{% endmacro %}
+
+{% macro section_head(kicker, title, note='') %}
+  <header class="section-head">
+    {% if kicker %}<span class="kicker">{{ kicker }}</span>{% endif %}
+    <h2>{{ title }}</h2>
+    {% if note %}<p class="section-note">{{ note }}</p>{% endif %}
+  </header>
+{% endmacro %}
+
+{% macro chart_block(svg, caption='') %}
+  <figure class="chart-card">
+    {{ svg | safe }}
+    {% if caption %}<figcaption>{{ caption }}</figcaption>{% endif %}
+  </figure>
+{% endmacro %}
+
+{% macro badge(text, tone='neutral') %}
+  <span class="badge badge-{{ tone }}">{{ text }}</span>
+{% endmacro %}
+
+{% macro label_badge(code, text) %}
+  <span class="badge label-{{ code }}">{{ text }}</span>
+{% endmacro %}
+
+{% macro empty_state(title, note='') %}
+  <div class="empty">
+    <strong>{{ title }}</strong>
+    {% if note %}<span>{{ note }}</span>{% endif %}
+  </div>
+{% endmacro %}
+
+{% macro meter(rows, tone='signal', caption='') %}
+  {#- نوارهای HTML برای واژه‌ها. عمداً SVG نیست: این‌ها متن‌اند و باید قابل
+      انتخاب و خواندن با صفحه‌خوان بمانند. -#}
+  {% if rows %}
+    <ul class="meters">
+      {% for row in rows %}
+        <li class="meter-row">
+          <span class="meter-term{% if row.is_phrase %} is-phrase{% endif %}">{{ row.term }}</span>
+          <span class="meter-track"><span class="meter-fill {{ tone }}" style="width: {{ (row.width * 100) | round(1) }}%"></span></span>
+          {% if row.score %}<span class="meter-score">{{ row.score }}</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+    {% if caption %}<p class="meter-caption">{{ caption }}</p>{% endif %}
+  {% else %}
+    <p class="muted">واژهٔ مؤثری پیدا نشد.</p>
+  {% endif %}
+{% endmacro %}

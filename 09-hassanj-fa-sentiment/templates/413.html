@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="error-page">
+  <span class="code">۴۱۳</span>
+  <h1>فایل بزرگ‌تر از حد مجاز است</h1>
+  <p>
+    سقف حجم فایل ورودی ۵ مگابایت است. فایل را به قطعه‌های کوچک‌تر تقسیم کنید و
+    هر قطعه را جدا تحلیل کنید؛ نتیجهٔ هر قطعه یک فایل CSV جداگانه است.
+  </p>
+  <p>
+    <a class="btn btn-primary" href="{{ url_for('pages.batch') }}">بازگشت به تحلیل گروهی</a>
+  </p>
+</section>
+{% endblock %}

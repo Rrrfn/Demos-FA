@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page_title }} | حس‌سنج</title>
+  <meta name="description" content="تحلیل احساسات کامنت فارسی — سه‌وجهی، توضیح‌پذیر و بدون وابستگی به سرویس بیرونی.">
+  <link rel="icon" type="image/svg+xml" href="{{ 'favicon.svg' | asset }}">
+  {#- نشانی قلم‌ها عمداً نشانهٔ محتوا ندارد: اگر داشته باشد، با نشانی‌ای که
+      ``@font-face`` داخل CSS می‌خواند فرق می‌کند و مرورگر قلم را دو بار
+      می‌گیرد — یک بار برای پیش‌بارگذاری و یک بار برای خودِ CSS. با نشانی
+      یکسان، پیش‌بارگذاری واقعاً به کار می‌افتد. -#}
+  <link rel="preload" href="/static/fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/static/fonts/Vazirmatn-Bold.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ 'css/app.css' | asset }}">
+</head>
+<body>
+  <a class="skip" href="#main">پرش به محتوا</a>
+
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="{{ url_for('pages.overview') }}">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7">
+            <path d="M3 15c2.4 0 3-6.5 4.8-6.5S10 20 12 20s2.2-12 4-12 1.6 7 3 7 1.4-2 2-2"/>
+          </svg>
+        </span>
+        <span class="brand-text">
+          <strong>حس‌سنج</strong>
+          <small>هوش احساسات کامنت فارسی</small>
+        </span>
+      </a>
+
+      <nav class="nav" aria-label="ناوبری اصلی">
+        {% for item in nav %}
+          <a href="{{ url_for(item.endpoint) }}"
+             {% if item.slug == active %}aria-current="page"{% endif %}>{{ item.label }}</a>
+        {% endfor %}
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <p class="note">{{ data_note }}</p>
+      <p class="foot-links">
+        <a href="{{ url_for('api.health') }}">وضعیت سرویس</a>
+        <a href="{{ url_for('api.metrics') }}">معیارهای خام</a>
+        <a href="{{ url_for('pages.methodology') }}">متدولوژی</a>
+      </p>
+    </div>
+  </footer>
+
+  <script src="{{ 'js/app.js' | asset }}" defer></script>
+</body>
+</html>

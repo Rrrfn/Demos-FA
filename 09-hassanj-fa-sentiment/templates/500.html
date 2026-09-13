@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="error-page">
+  <span class="code">۵۰۰</span>
+  <h1>سرویس نتوانست پاسخ بدهد</h1>
+  <p>
+    خطایی در پردازش رخ داد. اگر تازه دپلوی کرده‌اید، ممکن است ساخت مدل هنوز تمام
+    نشده باشد؛ چند لحظه بعد دوباره تلاش کنید. وضعیت سرویس از نشانی
+    <code>/api/health</code> قابل بررسی است.
+  </p>
+  <p>
+    <a class="btn btn-primary" href="{{ url_for('pages.overview') }}">تلاش دوباره</a>
+    <a class="btn" href="/api/health">وضعیت سرویس</a>
+  </p>
+</section>
+{% endblock %}

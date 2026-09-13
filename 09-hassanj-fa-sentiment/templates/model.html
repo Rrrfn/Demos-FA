@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block content %}
+<section class="page-head">
+  <span class="kicker">شفافیت مدل</span>
+  <h1>عددها، خطاها و محدودیت‌ها</h1>
+  <p class="lede">
+    این صفحه عمداً جای «تبلیغ» نیست. دو معیار گزارش می‌شود، نمونه‌هایی که مدل
+    اشتباه می‌خواند فهرست می‌شود، و واژه‌هایی که مدل اصلاً نمی‌شناسد هم نشان
+    داده می‌شود.
+  </p>
+</section>
+
+<dl class="highlights">
+  {% for item in highlights %}
+    <div>
+      <dt>{{ item.label }}</dt>
+      <dd>{{ item.value }}</dd>
+    </div>
+  {% endfor %}
+</dl>
+
+<section>
+  {{ ui.section_head('معیارها', 'به تفکیک کلاس',
+      'دقت و فراخوانی هر کلاس، روی آزمون هم‌توزیع.') }}
+  <div class="split">
+    <div class="tablewrap">
+      <table class="table">
+        <thead>
+          <tr><th scope="col">کلاس</th><th scope="col" class="num">دقت</th><th scope="col" class="num">فراخوانی</th><th scope="col" class="num">F1</th></tr>
+        </thead>
+        <tbody>
+          {% for row in class_report %}
+            <tr>
+              <th scope="row">{{ ui.label_badge(row.code, row.label) }}</th>
+              <td class="num">{{ row.precision }}</td>
+              <td class="num">{{ row.recall }}</td>
+              <td class="num">{{ row.f1 }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="panel">
+      <h3>نامزدها</h3>
+      <table class="table">
+        <thead>
+          <tr><th scope="col">مدل</th><th scope="col" class="num">F1 آزمون</th><th scope="col" class="num">F1 دست‌نویس</th></tr>
+        </thead>
+        <tbody>
+          {% for row in ranking %}
+            <tr{% if row.is_best %} class="is-best"{% endif %}>
+              <th scope="row">{{ row.name }}{% if row.is_best %} {{ ui.badge('انتخاب‌شده', 'accent') }}{% endif %}</th>
+              <td class="num">{{ row.f1 }}</td>
+              <td class="num">{{ row.stress_f1 }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p class="muted small">
+        انتخاب برنده بر پایهٔ F1 آزمون هم‌توزیع است. در ستون دوم معلوم می‌شود
+        همان برنده روی زبان واقعی چقدر افت می‌کند.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  {{ ui.section_head('خطاها', 'جاهایی که مدل اشتباه می‌خواند',
+      'از مجموعهٔ دست‌نویس — نمونه‌هایی که در آموزش نبوده‌اند.') }}
+  {% if misclassifications %}
+    <div class="tablewrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">متن</th>
+            <th scope="col">درست</th>
+            <th scope="col">پیش‌بینی</th>
+            <th scope="col" class="num">اطمینان</th>
+            <th scope="col" class="num">واژه‌های ناشناس</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in misclassifications %}
+            <tr>
+              <td class="cell-text">{{ row.text }}</td>
+              <td>{{ ui.label_badge(row.expected_code, row.expected) }}</td>
+              <td>{{ ui.label_badge(row.predicted_code, row.predicted) }}</td>
+              <td class="num">{{ row.confidence }}</td>
+              <td class="num">{{ row.unknown_ratio }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="muted small">
+      ستون آخر سهم واژه‌های متن است که در واژگان مدل نیستند. همبستگی مستقیمی با
+      اشتباه‌ها دارد: هرچه بیشتر، خطا محتمل‌تر.
+    </p>
+  {% else %}
+    {{ ui.empty_state('روی این مجموعه خطایی پیدا نشد', 'احتمالاً مدل عوض شده است.') }}
+  {% endif %}
+</section>
+
+<section>
+  {{ ui.section_head('نمونه‌های دشوار', 'متن‌هایی که مدل روی مرز می‌مانند',
+      'جمله‌های مرکب، نفی و استثنا. پاسخ مدل همراه با همان جملهٔ صداقت گزارش می‌شود.') }}
+  <ul class="case-list">
+    {% for row in hard_cases %}
+      <li>
+        <p class="case-text">{{ row.text }}</p>
+        <p class="case-meta">
+          {{ ui.label_badge(row.label_code, row.label_fa) }}
+          <span class="muted">{{ row.confidence }}</span>
+          <span class="muted">{{ row.verdict }}</span>
+        </p>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section>
+  {{ ui.section_head('واژگان ناشناس', 'واژه‌هایی که مدل نمی‌بیند',
+      'پرتکرارترین توکن‌های دیتاست که در واژگان TF-IDF نیستند — فهرست کارِ بعدی.') }}
+  <div class="tablewrap">
+    <table class="table">
+      <thead>
+        <tr><th scope="col">واژه</th><th scope="col" class="num">تکرار</th><th scope="col" class="num">سهم</th></tr>
+      </thead>
+      <tbody>
+        {% for row in unknown %}
+          <tr><th scope="row">{{ row.term }}</th><td class="num">{{ row.count }}</td><td class="num">{{ row.share }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

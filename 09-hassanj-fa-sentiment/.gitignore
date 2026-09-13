@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+.pytest_cache/
+.coverage
+htmlcov/
+
+# مشتق‌شده — در زمان ساخت از نو تولید می‌شوند و در مخزن نمی‌مانند.
+data/comments.csv
+data/*.log
+models/*.joblib
+models/metrics.json
