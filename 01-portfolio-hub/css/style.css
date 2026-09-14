@@ -247,46 +247,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .btn--link:hover { color: var(--accent); border-block-end-color: var(--accent); }
 .btn--sm { font-size: 0.8rem; padding: 0.4rem 0.9rem; }
 
-/* ── ۶) نوار اعتماد ── */
-.trust {
-  padding-block: clamp(3rem, 8vh, 5rem);
-  border-block-start: 1px solid var(--line);
-  background: var(--bg-2);
-}
-.trust__inner {
-  width: min(var(--width), 100% - var(--gutter) * 2);
-  margin-inline: auto;
-}
-.trust__label {
-  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em;
-  color: var(--faint); text-align: center; direction: rtl;
-  margin-block-end: clamp(1.5rem, 3vh, 2.5rem);
-}
-.trust__grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1px;
-  background: var(--line);
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  overflow: hidden;
-}
-.trust__item {
-  background: var(--bg);
-  padding: clamp(1.2rem, 2.5vw, 2rem);
-  display: grid; gap: 0.5rem; align-content: start;
-}
-.trust__item h3 {
-  font-family: var(--latin);
-  font-size: 0.88rem; font-weight: 600;
-  letter-spacing: 0.01em; direction: ltr; text-align: left;
-  color: var(--text);
-}
-.trust__item p {
-  font-size: 0.84rem; color: var(--dim); line-height: 1.8;
-}
-
-/* ── ۷) رویکرد ── */
+/* ── ۶) رویکرد ── */
 .approach {
   padding-block: clamp(4rem, 11vh, 7rem);
 }
@@ -478,10 +439,6 @@ section { scroll-margin-block-start: 80px; }
   padding: clamp(1.2rem, 2.5vw, 2rem);
   display: grid; gap: 0.5rem; align-content: start;
 }
-.cap__num {
-  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em;
-  color: var(--accent); display: block; margin-block-end: 0.3rem;
-}
 .cap h3 {
   font-size: 1rem; font-weight: 800; line-height: 1.3;
 }
@@ -597,7 +554,6 @@ section { scroll-margin-block-start: 80px; }
 
 /* ── ۱۷) واکنش‌گرا ── */
 @media (max-width: 1024px) {
-  .trust__grid { grid-template-columns: repeat(2, 1fr); }
   .approach__steps { grid-template-columns: repeat(2, 1fr); }
   .case { grid-template-columns: 1fr; }
   .case--reverse .case__media { grid-column: 1; }
@@ -627,7 +583,6 @@ section { scroll-margin-block-start: 80px; }
   .nav__toggle { display: flex; }
 
   .hero__title { font-size: clamp(2rem, 8vw, 3.2rem); max-width: none; }
-  .trust__grid { grid-template-columns: 1fr; }
   .approach__steps { grid-template-columns: 1fr; }
   .caps { grid-template-columns: 1fr; }
   .steps { grid-template-columns: 1fr; }

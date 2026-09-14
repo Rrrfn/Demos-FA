@@ -106,7 +106,7 @@
 
   if (supported) {
     var targets = document.querySelectorAll(
-      ".section__inner, .case, .card, .cap, .step, .trust__item, " +
+      ".section__inner, .case, .card, .cap, .step, " +
       ".approach__steps li, .techstack, .about__text, .cta__inner"
     );
 
