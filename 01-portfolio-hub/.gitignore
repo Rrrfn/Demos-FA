@@ -1,0 +1,21 @@
+# سیستم‌عامل
+.DS_Store
+Thumbs.db
+
+# محیط مجازی و کش پایتون (برای همسایگی با پروژه‌های بعدی)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# محیط
+.env
+.env.local
+
+# دیتابیس دمو
+*.db
+*.sqlite3
+
+# ویرایشگر
+.vscode/
+.idea/

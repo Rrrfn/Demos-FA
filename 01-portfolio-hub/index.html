@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Erfan Moayyed — برنامه‌نویس Python | هوش مصنوعی، اتوماسیون و وب‌اپلیکیشن</title>
+  <meta name="description" content="نمونه‌کارهای توسعه نرم‌افزار با Python، هوش مصنوعی، اتوماسیون، وب‌اپلیکیشن، ربات، داده و یادگیری ماشین." />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#0B0D0F" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Erfan Moayyed — Python Developer" />
+  <meta property="og:description" content="نمونه‌کارهای توسعه نرم‌افزار با Python، هوش مصنوعی، اتوماسیون و وب‌اپلیکیشن." />
+  <meta property="og:image" content="assets/img/work/02-arman.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/fonts/fonts.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body id="top">
+  <a class="skip" href="#work">پرش به پروژه‌ها</a>
+
+  <!-- ══ نوار بالا ══ -->
+  <header class="nav" id="siteNav">
+    <div class="nav__inner">
+      <a class="nav__brand" href="#top" aria-label="بازگشت به ابتدای صفحه">
+        <span class="nav__logo" aria-hidden="true"></span>
+        <span class="nav__name">Erfan Moayyed</span>
+      </a>
+
+      <nav class="nav__links" id="navLinks" aria-label="فهرست بخش‌ها">
+        <a href="#work">پروژه‌ها</a>
+        <a href="#capabilities">توانمندی‌ها</a>
+        <a href="#process">فرایند همکاری</a>
+        <a href="#about">درباره</a>
+        <a href="https://github.com/Rrrfn/Demos-FA" target="_blank" rel="noopener" class="nav__ext">GitHub ↗</a>
+      </nav>
+
+      <button class="nav__toggle" id="navToggle" type="button"
+              aria-label="گشودن فهرست" aria-expanded="false" aria-controls="navLinks">
+        <span aria-hidden="true"></span><span aria-hidden="true"></span>
+      </button>
+    </div>
+    <div class="nav__rail" aria-hidden="true"><i id="scrollRail"></i></div>
+  </header>
+
+  <main>
+    <!-- ══ سرصفحه ══ -->
+    <section class="hero" id="hero" aria-labelledby="heroTitle">
+      <div class="hero__inner">
+        <p class="hero__kicker">PYTHON DEVELOPER<br /><span>AI · AUTOMATION · BUSINESS APPLICATIONS</span></p>
+
+        <h1 class="hero__title" id="heroTitle">
+          از ایده تا <em>محصولی که کار می‌کند.</em>
+        </h1>
+
+        <p class="hero__lead">
+          توسعه نرم‌افزار با Python، هوش مصنوعی، اتوماسیون و داده؛
+          با تمرکز بر ساخت وب‌اپلیکیشن‌ها، ربات‌ها و ابزارهای واقعی برای حل مسائل کسب‌وکار.
+        </p>
+
+        <ul class="hero__stats">
+          <li><b>۱۰</b><span>پروژه کامل</span></li>
+          <li><b>۷</b><span>حوزه تخصصی</span></li>
+          <li><b>۲</b><span>دموی آنلاین</span></li>
+          <li><b>۰</b><span>فریم‌ورک در هسته</span></li>
+        </ul>
+
+        <div class="hero__actions">
+          <a class="btn btn--primary" href="#work">مشاهده پروژه‌ها</a>
+          <a class="btn btn--ghost" href="#capabilities">توانمندی‌ها</a>
+        </div>
+      </div>
+
+      <!-- تصویر抽象ی سیستم نرم‌افزاری -->
+      <div class="hero__visual" aria-hidden="true">
+        <svg viewBox="0 0 600 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="80" y1="100" x2="250" y2="100" stroke="rgba(142,175,196,0.15)" stroke-width="1"/>
+          <line x1="250" y1="100" x2="400" y2="180" stroke="rgba(142,175,196,0.12)" stroke-width="1"/>
+          <line x1="250" y1="100" x2="400" y2="60" stroke="rgba(142,175,196,0.12)" stroke-width="1"/>
+          <line x1="80" y1="200" x2="250" y2="200" stroke="rgba(142,175,196,0.15)" stroke-width="1"/>
+          <line x1="250" y1="200" x2="400" y2="180" stroke="rgba(142,175,196,0.12)" stroke-width="1"/>
+          <line x1="250" y1="200" x2="400" y2="280" stroke="rgba(142,175,196,0.12)" stroke-width="1"/>
+          <line x1="400" y1="180" x2="540" y2="140" stroke="rgba(142,175,196,0.15)" stroke-width="1"/>
+          <line x1="400" y1="180" x2="540" y2="220" stroke="rgba(142,175,196,0.15)" stroke-width="1"/>
+          <circle cx="80" cy="100" r="4" fill="rgba(142,175,196,0.3)"/>
+          <circle cx="80" cy="200" r="4" fill="rgba(142,175,196,0.3)"/>
+          <circle cx="250" cy="100" r="5" fill="rgba(142,175,196,0.4)"/>
+          <circle cx="250" cy="200" r="5" fill="rgba(142,175,196,0.4)"/>
+          <circle cx="400" cy="60" r="3.5" fill="rgba(142,175,196,0.3)"/>
+          <circle cx="400" cy="180" r="6" fill="rgba(142,175,196,0.5)"/>
+          <circle cx="400" cy="280" r="3.5" fill="rgba(142,175,196,0.3)"/>
+          <circle cx="540" cy="140" r="4" fill="rgba(142,175,196,0.35)"/>
+          <circle cx="540" cy="220" r="4" fill="rgba(142,175,196,0.35)"/>
+          <rect x="235" y="85" width="30" height="12" rx="3" fill="rgba(142,175,196,0.08)" stroke="rgba(142,175,196,0.15)" stroke-width="0.5"/>
+          <rect x="235" y="185" width="30" height="12" rx="3" fill="rgba(142,175,196,0.08)" stroke="rgba(142,175,196,0.15)" stroke-width="0.5"/>
+          <rect x="385" y="165" width="30" height="12" rx="3" fill="rgba(142,175,196,0.08)" stroke="rgba(142,175,196,0.15)" stroke-width="0.5"/>
+          <rect x="525" y="125" width="30" height="12" rx="3" fill="rgba(142,175,196,0.08)" stroke="rgba(142,175,196,0.15)" stroke-width="0.5"/>
+          <rect x="525" y="205" width="30" height="12" rx="3" fill="rgba(142,175,196,0.08)" stroke="rgba(142,175,196,0.15)" stroke-width="0.5"/>
+        </svg>
+      </div>
+    </section>
+
+    <!-- ══ نوار اعتماد ══ -->
+    <section class="trust" aria-label="حوزه‌های تخصص">
+      <div class="trust__inner">
+        <p class="trust__label">تمرکز بر ساخت محصولات نرم‌افزاری واقعی</p>
+        <div class="trust__grid">
+          <div class="trust__item">
+            <h3>AI & Intelligent Systems</h3>
+            <p>چت‌بات، قابلیت‌های مبتنی بر LLM، سیستم‌های هوشمند و ابزارهای تصمیم‌یار.</p>
+          </div>
+          <div class="trust__item">
+            <h3>Web Applications</h3>
+            <p>وب‌اپلیکیشن‌های اختصاصی، داشبوردها، APIها و سامانه‌های تحت وب.</p>
+          </div>
+          <div class="trust__item">
+            <h3>Automation & Bots</h3>
+            <p>ربات‌های تلگرام، اتصال APIها، پردازش خودکار و اتوماسیون فرایندها.</p>
+          </div>
+          <div class="trust__item">
+            <h3>Data & Machine Learning</h3>
+            <p>تحلیل داده، پردازش اطلاعات، مدل‌های یادگیری ماشین و ابزارهای داده‌محور.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ از مسئله تا راهکار ══ -->
+    <section class="approach" id="approach" aria-labelledby="approachTitle">
+      <div class="approach__inner">
+        <p class="label">APPROACH</p>
+        <h2 class="approach__title" id="approachTitle">از مسئله تا راهکار</h2>
+        <p class="approach__intro">
+          هر پروژه با تکنولوژی شروع نمی‌شود؛<br />
+          با یک مسئله شروع می‌شود.
+        </p>
+        <ol class="approach__steps">
+          <li>
+            <span class="approach__num">۰۱</span>
+            <h3>مسئله</h3>
+            <p>نیاز، چالش یا فرایندی که باید بهتر شود.</p>
+          </li>
+          <li>
+            <span class="approach__num">۰۲</span>
+            <h3>راهکار</h3>
+            <p>تبدیل مسئله به یک راهکار نرم‌افزاری مشخص.</p>
+          </li>
+          <li>
+            <span class="approach__num">۰۳</span>
+            <h3>توسعه</h3>
+            <p>ساخت، اتصال سرویس‌ها، پردازش داده و پیاده‌سازی قابلیت‌ها.</p>
+          </li>
+          <li>
+            <span class="approach__num">۰۴</span>
+            <h3>محصول</h3>
+            <p>یک ابزار قابل استفاده، قابل توسعه و آماده برای استفاده واقعی.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ══ پروژه‌های منتخب ══ -->
+    <section class="section" id="work" aria-labelledby="workTitle">
+      <div class="section__inner">
+        <p class="label">SELECTED WORK</p>
+        <h2 class="section__title" id="workTitle">پروژه‌های منتخب</h2>
+        <p class="section__note">
+          سه پروژه‌ای که بیشترین عمق فنی و تنوع قابلیت را نشان می‌دهند.
+        </p>
+      </div>
+
+      <!-- کارozy: Karino -->
+      <article class="case" id="p07">
+        <div class="case__media">
+          <img src="assets/img/work/07-karino.jpg" alt="فهرست پیشنهادهای شغلی کارینو با امتیاز تطابق و برچسب مهارت‌های منطبق" width="1400" height="875" loading="lazy" decoding="async" />
+        </div>
+        <div class="case__body">
+          <span class="case__cat">AI · Automation · Web</span>
+          <h3 class="case__title">کارینو — پلتفرم هوش استخدام</h3>
+          <p class="case__desc">
+            یک پلتفرم مبتنی بر هوش مصنوعی برای ساده‌تر کردن فرایندهای مرتبط با استخدام و تحلیل اطلاعات شغلی.
+          </p>
+          <dl class="case__detail">
+            <div><dt>مسئله</dt><dd>یک امتیاز ساده برای تطبیق شغلی کافی نیست؛ کاربر باید بداند چرا یک فرصت برای او مناسب‌تر است.</dd></div>
+            <div><dt>راهکار</dt><dd>ساخت کانکتور مستقل برای هر منبع و ایجاد خط لوله شامل دریافت، نرمال‌سازی، حذف تکراری، امتیازدهی و تولید پیشنهاد.</dd></div>
+            <div><dt>نتیجه</dt><dd>سیستمی که علاوه بر رتبه‌بندی، عوامل مؤثر بر امتیاز هر آگهی را نیز نمایش می‌دهد و خرابی یک منبع باعث توقف کل سیستم نمی‌شود.</dd></div>
+          </dl>
+          <ul class="case__tags"><li>Python</li><li>Flask</li><li>SQLite</li><li>RSS</li></ul>
+          <div class="case__actions">
+            <a class="btn btn--primary btn--sm" href="https://github.com/Rrrfn/Demos-FA/tree/main/07-karino-ai-agent" target="_blank" rel="noopener">مشاهده پروژه</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- کارozy: Report-Saz -->
+      <article class="case case--reverse" id="p10">
+        <div class="case__media">
+          <img src="assets/img/work/10-reportsaz.jpg" alt="داشبورد گزارش‌ساز با کارت‌های شاخص، نمودار میله‌ای فروش و فهرست بینش‌ها" width="1400" height="875" loading="lazy" decoding="async" />
+        </div>
+        <div class="case__body">
+          <span class="case__cat">Data · Automation · Reporting</span>
+          <h3 class="case__title">گزارش‌ساز — هوش داده و گزارش‌سازی</h3>
+          <p class="case__desc">
+            پلتفرمی برای تبدیل داده‌های خام به تحلیل و گزارش‌های ساختاریافته، با تمرکز بر کاهش کار دستی و افزایش سرعت تصمیم‌گیری.
+          </p>
+          <dl class="case__detail">
+            <div><dt>مسئله</dt><dd>تولید دستی گزارش از فایل‌های خام زمان‌بر است و مشکلات کیفیت داده معمولاً تا پایان فرآیند پنهان می‌مانند.</dd></div>
+            <div><dt>راهکار</dt><dd>خط لوله مرحله‌ای برای پروفایل داده، پاک‌سازی، سنجش کیفیت و تشخیص ناهنجاری با روش IQR.</dd></div>
+            <div><dt>نتیجه</dt><dd>تولید خودکار گزارش PDF فارسی و فایل Excel قالب‌بندی‌شده، همراه با نمایش منشأ داده‌ها و نتایج پردازش.</dd></div>
+          </dl>
+          <ul class="case__tags"><li>Flask</li><li>pandas</li><li>openpyxl</li><li>fpdf2</li></ul>
+          <div class="case__actions">
+            <a class="btn btn--primary btn--sm" href="https://github.com/Rrrfn/Demos-FA/tree/main/10-report-saz" target="_blank" rel="noopener">مشاهده پروژه</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- کارozy: Cheshmbaz -->
+      <article class="case" id="p06">
+        <div class="case__media">
+          <img src="assets/img/work/06-cheshmbaz.jpg" alt="داشبورد چشم‌باز با ردیف شاخص‌ها، جدول اقلام بازار و نمودار روند قیمت" width="1400" height="875" loading="lazy" decoding="async" />
+        </div>
+        <div class="case__body">
+          <span class="case__cat">Dashboard · Data · BI</span>
+          <h3 class="case__title">چشم‌باز — داشبورد هوش بازار</h3>
+          <p class="case__desc">
+            داشبوردی برای نمایش، تحلیل و سازمان‌دهی داده‌های بازار در قالبی قابل فهم برای تصمیم‌گیری.
+          </p>
+          <dl class="case__detail">
+            <div><dt>مسئله</dt><dd>نمایش داده‌های زمانی و تشخیص تازه یا قدیمی بودن اطلاعات، بدون اضافه کردن وابستگی‌های سنگین.</dd></div>
+            <div><dt>راهکار</dt><dd>جمع‌آوری زمان‌بندی‌شده، API نسخه‌دار، ذخیره تاریخچه در SQLite و نمودارهای SVG اختصاصی.</dd></div>
+            <div><dt>نتیجه</dt><dd>داشبوردی سبک و قابل توسعه که وضعیت و تازگی داده هر منبع را مستقیماً در رابط کاربری نمایش می‌دهد.</dd></div>
+          </dl>
+          <ul class="case__tags"><li>Flask</li><li>SQLite</li><li>REST API</li><li>SVG</li></ul>
+          <div class="case__actions">
+            <a class="btn btn--primary btn--sm" href="https://github.com/Rrrfn/Demos-FA/tree/main/06-cheshmbaz-dashboard" target="_blank" rel="noopener">مشاهده پروژه</a>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <!-- ══ پروژه‌های بیشتر ══ -->
+    <section class="section section--alt" id="archive" aria-labelledby="archiveTitle">
+      <div class="section__inner">
+        <p class="label">MORE PROJECTS</p>
+        <h2 class="section__title" id="archiveTitle">پروژه‌های بیشتر</h2>
+        <p class="section__note">
+          نمونه‌های دیگری از وب‌اپلیکیشن، ربات، هوش مصنوعی، یادگیری ماشین و پردازش داده.
+        </p>
+      </div>
+
+      <div class="grid">
+        <!-- 01 — Portfolio Hub -->
+        <article class="card">
+          <figure class="card__shot">
+            <img src="assets/img/work/01-portfolio.jpg" alt="پورتفولیو هاب" width="1400" height="875" loading="lazy" decoding="async" />
+          </figure>
+          <div class="card__body">
+            <span class="card__cat">Web · Frontend</span>
+            <h3 class="card__title">پورتفولیو هاب</h3>
+            <p class="card__desc">ورودی واحد برای مجموعه پروژه‌ها، بدون فریم‌ورک.</p>
+            <ul class="card__tags"><li>HTML5</li><li>CSS3</li><li>JavaScript</li></ul>
+            <div class="card__links">
+              <a class="btn btn--ghost btn--sm" href="#top">همین صفحه</a>
+              <a class="btn btn--link btn--sm" href="https://github.com/Rrrfn/Demos-FA/tree/main/01-portfolio-hub" target="_blank" rel="noopener">کد ↗</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- 02 — Arman Holding -->
+        <article class="card">
+          <figure class="card__shot">
+            <img src="assets/img/work/02-arman.jpg" alt="سایت هلدینگ آرمان" width="1400" height="875" loading="lazy" decoding="async" />
+          </figure>
+          <div class="card__body">
+            <span class="card__cat">Web · Corporate</span>
+            <h3 class="card__title">آرمان هلدینگ</h3>
+            <p class="card__desc">وب‌سایت شرکتی چندصفحه‌ای، بدون مرحله Build.</p>
+            <ul class="card__tags"><li>HTML5</li><li>CSS3</li><li>JavaScript</li></ul>
+            <div class="card__links">
+              <a class="btn btn--primary btn--sm" href="https://arman-holding.onrender.com" target="_blank" rel="noopener">نمایش زنده</a>
+              <a class="btn btn--link btn--sm" href="https://github.com/Rrrfn/Demos-FA/tree/main/02-arman-holding" target="_blank" rel="noopener">کد ↗</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- 03 — Nafeh -->
+        <article class="card">
+          <figure class="card__shot">
+            <img src="assets/img/work/03-nafeh.jpg" alt="فروشگاه نافه" width="1400" height="875" loading="lazy" decoding="async" />
+          </figure>
+          <div class="card__body">
+            <span class="card__cat">E-commerce · Frontend</span>
+            <h3 class="card__title">نافه</h3>
+            <p class="card__desc">فروشگاه آنلاین با سبد خرید و علاقه‌مندی، بدون بک‌اند.</p>
+            <ul class="card__tags"><li>HTML5</li><li>CSS3</li><li>localStorage</li></ul>
+            <div class="card__links">
+              <a class="btn btn--primary btn--sm" href="https://nafeh-parfum.onrender.com" target="_blank" rel="noopener">نمایش زنده</a>
+              <a class="btn btn--link btn--sm" href="https://github.com/Rrrfn/Demos-FA/tree/main/03-nafeh-parfum" target="_blank" rel="noopener">کد ↗</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- 04 — Hamyar -->
+        <article class="card">
+          <figure class="card__shot">
+            <img src="assets/img/work/04-hamyar.jpg" alt="چت‌بات همیار" width="1400" height="875" loading="lazy" decoding="async" />
+          </figure>
+          <div class="card__body">
+            <span class="card__cat">Support · NLP</span>
+            <h3 class="card__title">همیار</h3>
+            <p class="card__desc">چت‌بات هوشمند پشتیبانی مبتنی بر دانشنامه.</p>
+            <ul class="card__tags"><li>Flask</li><li>TF-IDF</li><li>SQLite</li></ul>
+            <div class="card__links">
+              <a class="btn btn--link btn--sm" href="https://github.com/Rrrfn/Demos-FA/tree/main/04-hamyar-chatbot" target="_blank" rel="noopener">کد ↗</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- 05 — Ghematyar -->
+        <article class="card">
+          <figure class="card__shot">
+            <img src="assets/img/work/05-ghematyar.jpg" alt="ربات قیمت‌یار" width="1400" height="875" loading="lazy" decoding="async" />
+          </figure>
+          <div class="card__body">
+            <span class="card__cat">Bot · Automation</span>
+            <h3 class="card__title">قیمت‌یار</h3>
+            <p class="card__desc">ربات تلگرام پایش و نمایش قیمت بازار.</p>
+            <ul class="card__tags"><li>Python</li><li>aiogram</li><li>SQLite</li></ul>
+            <div class="card__links">
+              <a class="btn btn--link btn--sm" href="https://github.com/Rrrfn/Demos-FA/tree/main/05-ghematyar-bot" target="_blank" rel="noopener">کد ↗</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- 08 — Khoneyab -->
+        <article class="card">
+          <figure class="card__shot">
+            <img src="assets/img/work/08-khoneyab.jpg" alt="خانه‌یاب" width="1400" height="875" loading="lazy" decoding="async" />
+          </figure>
+          <div class="card__body">
+            <span class="card__cat">ML · Data Science</span>
+            <h3 class="card__title">خانه‌یاب</h3>
+            <p class="card__desc">تحلیل و برآورد قیمت ملک با یادگیری ماشین.</p>
+            <ul class="card__tags"><li>Python</li><li>scikit-learn</li><li>pandas</li></ul>
+            <div class="card__links">
+              <a class="btn btn--link btn--sm" href="https://github.com/Rrrfn/Demos-FA/tree/main/08-khoneyab-ml" target="_blank" rel="noopener">کد ↗</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- 09 — Hassanj -->
+        <article class="card">
+          <figure class="card__shot">
+            <img src="assets/img/work/09-hassanj.jpg" alt="حس‌سنج" width="1400" height="875" loading="lazy" decoding="async" />
+          </figure>
+          <div class="card__body">
+            <span class="card__cat">NLP · Sentiment</span>
+            <h3 class="card__title">حس‌سنج</h3>
+            <p class="card__desc">تحلیل احساسات متون فارسی با یادگیری ماشین.</p>
+            <ul class="card__tags"><li>Flask</li><li>scikit-learn</li><li>NLP</li></ul>
+            <div class="card__links">
+              <a class="btn btn--link btn--sm" href="https://github.com/Rrrfn/Demos-FA/tree/main/09-hassanj-fa-sentiment" target="_blank" rel="noopener">کد ↗</a>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ══ توانمندی‌ها ══ -->
+    <section class="section" id="capabilities" aria-labelledby="capTitle">
+      <div class="section__inner">
+        <p class="label">CAPABILITIES</p>
+        <h2 class="section__title" id="capTitle">چه چیزی می‌سازم؟</h2>
+        <p class="section__note">
+          تمرکز من فقط روی یک تکنولوژی نیست؛ هدف، ساخت سیستمی است که مسئله واقعی را حل کند.
+        </p>
+      </div>
+
+      <div class="caps">
+        <article class="cap">
+          <span class="cap__num">۰۱</span>
+          <h3>AI & Intelligent Systems</h3>
+          <p>چت‌بات، قابلیت‌های مبتنی بر LLM، سیستم‌های هوشمند و ابزارهای تصمیم‌یار.</p>
+          <ul><li>TF-IDF</li><li>NLP</li><li>Explainability</li><li>Deduplication</li></ul>
+        </article>
+        <article class="cap">
+          <span class="cap__num">۰۲</span>
+          <h3>Web Applications</h3>
+          <p>وب‌اپلیکیشن‌های اختصاصی، داشبوردها، APIها و سامانه‌های تحت وب.</p>
+          <ul><li>Python</li><li>Flask</li><li>REST API</li><li>SQLite</li></ul>
+        </article>
+        <article class="cap">
+          <span class="cap__num">۰۳</span>
+          <h3>Automation & Bots</h3>
+          <p>ربات‌های تلگرام، اتصال APIها، پردازش خودکار و اتوماسیون فرایندها.</p>
+          <ul><li>aiogram</li><li>RSS</li><li>Scheduler</li><li>Retry</li></ul>
+        </article>
+        <article class="cap">
+          <span class="cap__num">۰۴</span>
+          <h3>Data & Machine Learning</h3>
+          <p>تحلیل داده، پردازش اطلاعات، مدل‌های یادگیری ماشین و ابزارهای داده‌محور.</p>
+          <ul><li>scikit-learn</li><li>pandas</li><li>NumPy</li><li>SVG</li></ul>
+        </article>
+      </div>
+    </section>
+
+    <!-- ══ تکنولوژی ══ -->
+    <section class="section section--alt" id="tech" aria-labelledby="techTitle">
+      <div class="section__inner">
+        <p class="label">TECHNOLOGY</p>
+        <h2 class="section__title" id="techTitle">پشتهٔ فنی</h2>
+      </div>
+      <div class="techstack">
+        <span>Python</span>
+        <span>Flask</span>
+        <span>FastAPI</span>
+        <span>SQLite</span>
+        <span>AI / LLM</span>
+        <span>Machine Learning</span>
+        <span>Data Science</span>
+        <span>REST API</span>
+        <span>Telegram Bot API</span>
+        <span>HTML5 · CSS3 · JS</span>
+        <span>openpyxl · fpdf2</span>
+        <span>pytest · Gunicorn</span>
+      </div>
+    </section>
+
+    <!-- ══ فرایند همکاری ══ -->
+    <section class="section" id="process" aria-labelledby="processTitle">
+      <div class="section__inner">
+        <p class="label">PROCESS</p>
+        <h2 class="section__title" id="processTitle">فرایند همکاری</h2>
+      </div>
+      <ol class="steps">
+        <li class="step">
+          <span class="step__num">۰۱</span>
+          <h3 class="step__title">درک مسئله</h3>
+          <p>ابتدا هدف، نیازمندی‌ها و محدودیت‌های پروژه مشخص می‌شود.</p>
+        </li>
+        <li class="step">
+          <span class="step__num">۰۲</span>
+          <h3 class="step__title">طراحی راهکار</h3>
+          <p>راهکار فنی و مسیر اجرای پروژه بر اساس نیاز واقعی انتخاب می‌شود.</p>
+        </li>
+        <li class="step">
+          <span class="step__num">۰۳</span>
+          <h3 class="step__title">توسعه</h3>
+          <p>پیاده‌سازی مرحله‌به‌مرحله و قابل بررسی انجام می‌شود.</p>
+        </li>
+        <li class="step">
+          <span class="step__num">۰۴</span>
+          <h3 class="step__title">تحویل</h3>
+          <p>خروجی نهایی همراه با تست، مستندسازی و توضیحات لازم تحویل می‌شود.</p>
+        </li>
+      </ol>
+    </section>
+
+    <!-- ══ درباره ══ -->
+    <section class="section section--alt" id="about" aria-labelledby="aboutTitle">
+      <div class="section__inner">
+        <p class="label">ABOUT</p>
+        <h2 class="section__title" id="aboutTitle">درباره این رویکرد</h2>
+        <div class="about__text">
+          <p>
+            تمرکز من روی ساخت نرم‌افزارهایی است که فقط از نظر فنی قابل اجرا نباشند؛
+            بلکه برای یک مسئله مشخص، کاربرد واقعی داشته باشند.
+          </p>
+          <p>
+            با تمرکز بر Python، هوش مصنوعی، اتوماسیون، داده و توسعه وب، تلاش می‌کنم
+            هر پروژه را از مرحله درک مسئله تا ساخت یک راهکار قابل استفاده دنبال کنم.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ CTA نهایی ══ -->
+    <section class="cta" id="cta" aria-labelledby="ctaTitle">
+      <div class="cta__inner">
+        <h2 class="cta__title" id="ctaTitle">
+          یک مسئله دارید؟<br />
+          <em>بیایید آن را به یک راهکار تبدیل کنیم.</em>
+        </h2>
+        <p class="cta__lead">
+          از یک ایده اولیه تا یک وب‌اپلیکیشن، ربات، ابزار هوشمند یا سیستم اتوماسیون قابل استفاده.
+        </p>
+        <a class="btn btn--primary" href="#work">مشاهده پروژه‌ها</a>
+      </div>
+    </section>
+  </main>
+
+  <!-- ══ پابرگ ══ -->
+  <footer class="foot">
+    <div class="foot__inner">
+      <p class="foot__tagline">Python Developer for AI, Automation & Business Applications</p>
+      <div class="foot__row">
+        <span>© ۲۰۲۶ Erfan Moayyed</span>
+        <a href="https://github.com/Rrrfn/Demos-FA" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js" defer></script>
+</body>
+</html>
