@@ -333,6 +333,44 @@ section { scroll-margin-block-start: 80px; }
 }
 .case:hover .case__media img { border-color: var(--line-2); }
 
+/* ── گردش‌کار زنده ──────────────────────────────────────────────
+   کارت در حالت عادی یک تصویر ثابت است — نخستین تصویر از خود برنامه.
+   روی هاور، اسکریپت همان تصویر را با WebP متحرک عوض می‌کند و نشان
+   «در حال پخش» روشن می‌شود. اندازهٔ قاب با `aspect-ratio` قفل شده، پس
+   جابه‌جایی منبع هیچ پرشی نمی‌سازد.
+
+   نشان همیشه دیده می‌شود — وگرنه کاربر هیچ‌وقت نمی‌فهمد کارت قابلیت
+   نمایش گردش‌کار دارد. در حالت عادی کم‌رنگ است و هنگام پخش پررنگ. */
+.case__media, .card__shot { position: relative; }
+
+.has-walk::after {
+  content: "گردش‌کار ▸";
+  position: absolute;
+  inset-block-end: 0.65rem;
+  inset-inline-start: 0.65rem;
+  z-index: 2;
+  padding: 0.22rem 0.55rem;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background: rgba(11, 13, 15, 0.74);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  opacity: 0.72;
+  transition: opacity 0.35s var(--ease), border-color 0.35s var(--ease);
+  pointer-events: none;
+}
+
+.has-walk.is-live::after {
+  content: "در حال پخش";
+  opacity: 1;
+  border-color: var(--accent, var(--line-2));
+}
+
+/* کاربری که «کاهش حرکت» خواسته یا صرفه‌جویی در داده را روشن کرده، هیچ‌وقت
+   نشان «در حال پخش» را نمی‌بیند، چون اسکریپت اصلاً جابه‌جایی انجام نمی‌دهد. */
+
 .case__body {
   display: grid; gap: 0.65rem; align-content: start;
 }
